@@ -54,33 +54,27 @@ export default function AboutPage() {
             What We Publish
           </h2>
           <p className="mt-4">
-            Our catalogue spans six core genres, each with a dedicated editorial
-            focus:
+            We publish gripping, emotionally charged stories that keep readers
+            hooked from the first line to the last. Our focus is on dramatic
+            fiction — real-life inspired narratives full of twists, betrayals,
+            resilience, and redemption.
           </p>
           <ul className="mt-4 space-y-2">
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Horror</strong> — Slow-burn dread, psychological tension, and stories that linger after dark.</span>
+              <span><strong className="text-zinc-200">Drama</strong> — Intense family conflicts, shocking revelations, and powerful comebacks.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Mystery</strong> — Atmospheric puzzles, unreliable narrators, and revelations earned line by line.</span>
+              <span><strong className="text-zinc-200">Revenge &amp; Justice</strong> — Stories where the underdog fights back and wins against all odds.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Romance</strong> — Missed connections, second chances, and the quiet courage of vulnerability.</span>
+              <span><strong className="text-zinc-200">Relationships</strong> — Marriage, betrayal, trust, and the raw emotions that define us.</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Fantasy</strong> — Worlds rooted in folklore, wonder, and memories you never had.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Sci-Fi</strong> — Speculative fiction exploring isolation, technology, and what it means to be human.</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" aria-hidden="true" />
-              <span><strong className="text-zinc-200">Drama</strong> — Intimate portraits of ambition, regret, and performances given when the curtain falls.</span>
+              <span><strong className="text-zinc-200">Life Stories</strong> — Extraordinary tales of ordinary people facing impossible situations.</span>
             </li>
           </ul>
         </section>

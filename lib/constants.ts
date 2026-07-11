@@ -5,16 +5,16 @@ export const SITE_URL = "https://www.trendsmix.online";
 export const SITE_DOMAIN = "trendsmix.online";
 
 export const SITE_DESCRIPTION =
-  "Original stories across every genre — horror, mystery, romance, fantasy, sci-fi, and drama. Fresh fiction published daily for readers who crave something unforgettable.";
+  "Gripping drama, revenge, and real-life inspired stories that keep you reading. Fresh fiction published daily — free, no ads, no paywalls.";
 
 export const SITE_KEYWORDS = [
   "fiction",
   "short stories",
-  "horror stories",
-  "mystery stories",
-  "romance stories",
-  "fantasy stories",
-  "sci-fi stories",
+  "drama stories",
+  "revenge stories",
+  "relationship stories",
+  "life stories",
+  "viral stories",
   "online magazine",
   "TrendsMix",
 ];

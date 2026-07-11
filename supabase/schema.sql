@@ -225,7 +225,10 @@ insert into public.settings (key, value) values
   ('facebook_url', ''),
   ('adsense_client_id', ''),
   ('adsense_slot_id', ''),
-  ('analytics_id', '');
+  ('analytics_id', ''),
+  ('maintenance_mode', 'false'),
+  ('n8n_enabled', 'true'),
+  ('n8n_api_key', '');
 
 
 -- 6. Media --------------------------------------------------------------------

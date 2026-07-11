@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
+import { isN8nEnabled } from "@/lib/settings";
 import { createClient } from "@supabase/supabase-js";
 
 interface CreatePostBody {
@@ -8,6 +9,43 @@ interface CreatePostBody {
   article_content: string;
   image?: string;
   "url image"?: string;
+}
+
+const NOISE_PATTERNS = [
+  /\d+×Search for:.*?Menu/gi,
+  /\bAd\b(?=\s*[A-Z])/g,
+  /Advertisement/gi,
+  /\| Theme:.*$/gm,
+  /Search for:.*?(?=<|$)/gi,
+  /\* \* \* \*/g,
+  /Menu\s*#/gi,
+  /Restaurants?\s*\*/gi,
+];
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function cleanContent(html: string): string {
+  let cleaned = html;
+  for (const pattern of NOISE_PATTERNS) {
+    cleaned = cleaned.replace(pattern, "");
+  }
+  return cleaned
+    .replace(/(<br\s*\/?>\s*){3,}/gi, "<br><br>")
+    .replace(/^\s+|\s+$/g, "");
+}
+
+function generateExcerpt(html: string, maxLen = 160): string {
+  const text = stripHtml(html);
+  if (text.length <= maxLen) return text;
+  const cut = text.lastIndexOf(" ", maxLen);
+  return text.slice(0, cut > 0 ? cut : maxLen) + "...";
+}
+
+function calculateReadTime(html: string): number {
+  const words = stripHtml(html).split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 230));
 }
 
 function getSupabase() {
@@ -22,6 +60,13 @@ function getSupabase() {
 export async function POST(request: Request) {
   const authError = verifyApiKey(request);
   if (authError) return authError;
+
+  if (!(await isN8nEnabled())) {
+    return NextResponse.json(
+      { error: "n8n auto-publish is disabled in Control Center." },
+      { status: 503 },
+    );
+  }
 
   let body: CreatePostBody;
   try {
@@ -49,17 +94,21 @@ export async function POST(request: Request) {
     );
   }
 
+  const content = cleanContent(body.article_content);
+  const excerpt = generateExcerpt(content);
+  const readTime = calculateReadTime(content);
+
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("publish_post_n8n", {
     p_api_key: apiKey,
     p_title: body.title.trim(),
-    p_content: body.article_content,
+    p_content: content,
     p_slug: null,
-    p_excerpt: "",
+    p_excerpt: excerpt,
     p_category_slug: null,
     p_status: "published",
     p_featured: false,
-    p_read_time: 5,
+    p_read_time: readTime,
     p_featured_image: body.image?.trim() || body["url image"]?.trim() || null,
     p_featured_image_alt: "",
     p_meta_title: null,
