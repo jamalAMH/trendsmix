@@ -1,8 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { slugify } from "@/lib/utils";
+import { createClient } from "@supabase/supabase-js";
 
 interface CreatePostBody {
   title: string;
@@ -21,32 +20,13 @@ interface CreatePostBody {
   og_image?: string;
 }
 
-async function resolveCategoryId(categorySlug?: string): Promise<string | null> {
-  if (!categorySlug) return null;
-
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("slug", categorySlug)
-    .single<{ id: string }>();
-
-  return data?.id ?? null;
-}
-
-async function resolveAuthorId(): Promise<string | null> {
-  const configured = process.env.N8N_AUTHOR_ID;
-  if (configured) return configured;
-
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("profiles")
-    .select("id")
-    .eq("role", "admin")
-    .limit(1)
-    .single<{ id: string }>();
-
-  return data?.id ?? null;
+function getSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error("Missing Supabase environment variables.");
+  }
+  return createClient(url, key);
 }
 
 export async function POST(request: Request) {
@@ -68,74 +48,66 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "content is required." }, { status: 400 });
   }
 
-  const slug = body.slug?.trim() || slugify(body.title);
-  const status = body.status ?? "published";
-
-  const supabase = createAdminClient();
-
-  const { data: existing } = await supabase
-    .from("posts")
-    .select("id")
-    .eq("slug", slug)
-    .maybeSingle();
-
-  if (existing) {
+  const apiKey = process.env.N8N_API_KEY;
+  if (!apiKey) {
     return NextResponse.json(
-      { error: `A post with slug "${slug}" already exists.` },
-      { status: 409 },
+      { error: "N8N_API_KEY is not configured on the server." },
+      { status: 503 },
     );
   }
 
-  const categoryId = await resolveCategoryId(body.category);
-  if (body.category && !categoryId) {
-    return NextResponse.json(
-      {
-        error: `Unknown category "${body.category}". Use: horror, mystery, romance, fantasy, sci-fi, drama.`,
-      },
-      { status: 400 },
-    );
-  }
-
-  const authorId = await resolveAuthorId();
-
-  const { data, error } = await supabase
-    .from("posts")
-    .insert({
-      title: body.title.trim(),
-      slug,
-      excerpt: body.excerpt?.trim() ?? "",
-      content: body.content,
-      category_id: categoryId,
-      author_id: authorId,
-      status,
-      featured: body.featured ?? false,
-      read_time: body.read_time ?? 5,
-      featured_image: body.featured_image ?? null,
-      featured_image_alt: body.featured_image_alt ?? "",
-      meta_title: body.meta_title ?? null,
-      meta_description: body.meta_description ?? null,
-      canonical_url: body.canonical_url ?? null,
-      og_image: body.og_image ?? null,
-      published_at: status === "published" ? new Date().toISOString() : null,
-    })
-    .select("id, slug, title, status, published_at")
-    .single();
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc("publish_post_n8n", {
+    p_api_key: apiKey,
+    p_title: body.title.trim(),
+    p_content: body.content,
+    p_slug: body.slug?.trim() || null,
+    p_excerpt: body.excerpt?.trim() ?? "",
+    p_category_slug: body.category?.trim() || null,
+    p_status: body.status ?? "published",
+    p_featured: body.featured ?? false,
+    p_read_time: body.read_time ?? 5,
+    p_featured_image: body.featured_image ?? null,
+    p_featured_image_alt: body.featured_image_alt ?? "",
+    p_meta_title: body.meta_title ?? null,
+    p_meta_description: body.meta_description ?? null,
+    p_canonical_url: body.canonical_url ?? null,
+    p_og_image: body.og_image ?? null,
+  });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error.message;
+    if (message.includes("Unauthorized")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (message.includes("already exists")) {
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    if (message.includes("Unknown category") || message.includes("required")) {
+      return NextResponse.json({ error: message }, { status: 400 });
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
   }
+
+  const post = data as {
+    id: string;
+    slug: string;
+    title: string;
+    status: string;
+    published_at: string | null;
+  };
 
   revalidatePath("/");
   revalidatePath("/stories");
-  revalidatePath(`/stories/${slug}`);
+  revalidatePath(`/stories/${post.slug}`);
   revalidatePath("/sitemap.xml");
   revalidatePath("/feed.xml");
 
   return NextResponse.json(
     {
       ok: true,
-      post: data,
-      url: `/stories/${slug}`,
+      post,
+      url: `/stories/${post.slug}`,
     },
     { status: 201 },
   );
