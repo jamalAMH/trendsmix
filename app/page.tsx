@@ -16,10 +16,10 @@ export const metadata: Metadata = createPageMetadata({
   path: "/",
 });
 
-export default function Home() {
-  const featuredStory = getFeaturedStory();
-  const latestStories = getLatestStories(3);
-  const trendingStories = getTrendingStories(3);
+export default async function Home() {
+  const featuredStory = await getFeaturedStory();
+  const latestStories = await getLatestStories(3);
+  const trendingStories = await getTrendingStories(3);
 
   return (
     <>

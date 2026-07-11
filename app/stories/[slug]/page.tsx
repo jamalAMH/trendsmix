@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import DOMPurify from "isomorphic-dompurify";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import CategoryBadge from "@/components/shared/CategoryBadge";
@@ -27,14 +28,15 @@ interface StoryDetailsPageProps {
 }
 
 export async function generateStaticParams() {
-  return getAllStorySlugs().map((slug) => ({ slug }));
+  const slugs = await getAllStorySlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
   params,
 }: StoryDetailsPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
+  const story = await getStoryBySlug(slug);
 
   if (!story) {
     return {
@@ -50,14 +52,14 @@ export default async function StoryDetailsPage({
   params,
 }: StoryDetailsPageProps) {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
+  const story = await getStoryBySlug(slug);
 
   if (!story) {
     notFound();
   }
 
-  const { prev, next } = getAdjacentStories(slug);
-  const relatedStories = getRelatedStories(slug, 3);
+  const { prev, next } = await getAdjacentStories(slug);
+  const relatedStories = await getRelatedStories(slug, 3);
   const storyUrl = absoluteUrl(`/stories/${story.slug}`);
 
   return (
@@ -155,9 +157,7 @@ export default async function StoryDetailsPage({
             className="article-body mt-10 text-base leading-[1.85] text-zinc-300 sm:text-lg"
             itemProp="articleBody"
           >
-            {story.content.map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.content) }} />
           </div>
 
           <footer className="mt-12 border-t border-zinc-800/80 pt-10">

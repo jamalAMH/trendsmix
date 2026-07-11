@@ -20,7 +20,7 @@ export default async function StoryOpenGraphImage({
   params,
 }: StoryOpenGraphImageProps) {
   const { slug } = await params;
-  const story = getStoryBySlug(slug);
+  const story = await getStoryBySlug(slug);
 
   if (!story) {
     notFound();

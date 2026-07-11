@@ -8,7 +8,8 @@ Original fiction magazine — horror, mystery, romance, fantasy, sci-fi, and dra
 - **Language:** TypeScript 5
 - **Styling:** Tailwind CSS 4
 - **Fonts:** Geist Sans, Geist Mono, Instrument Serif (Google Fonts)
-- **Content:** Local JSON (`public/data/stories.json`)
+- **Database:** Supabase (PostgreSQL + Auth + Storage)
+- **Editor:** TipTap (rich text)
 - **Deployment:** Vercel
 
 ## Project Structure
@@ -50,16 +51,29 @@ trendsmix/
 │   ├── shared/              # Newsletter, ReadingTimeBadge, CategoryBadge
 │   └── stories/             # StoryCard, StoryGrid, SearchBar, Pagination, etc.
 ├── lib/
-│   ├── content.ts           # Content data layer (reads stories.json)
+│   ├── content.ts           # Content data layer (reads from Supabase)
 │   ├── stories.ts           # Re-export layer (backward compatibility)
 │   ├── seo.ts               # Metadata helpers, JSON-LD generators
 │   ├── constants.ts         # Site name, description, nav links
 │   └── utils.ts             # Category gradients, date formatting, cn()
 ├── types/
-│   └── story.ts             # Story, Author, FeaturedImage interfaces
-├── public/
-│   └── data/
-│       └── stories.json     # Story content (writable by n8n/CI)
+│   ├── story.ts             # Story, Author, FeaturedImage interfaces
+│   └── database.ts          # Database table types
+├── supabase/
+│   └── schema.sql           # Full database schema
+├── app/
+│   └── admin/               # Admin dashboard (protected)
+│       ├── layout.tsx        # Admin layout with sidebar
+│       ├── page.tsx          # Dashboard
+│       ├── login/            # Auth login
+│       ├── posts/            # Posts CRUD + TipTap editor
+│       ├── categories/       # Categories CRUD
+│       ├── pages/            # Editable site pages
+│       ├── media/            # Media library
+│       ├── settings/         # Site settings
+│       └── users/            # User management
+├── supabase/
+│   └── schema.sql           # Database schema (run in Supabase SQL Editor)
 ├── next.config.ts
 ├── tsconfig.json
 ├── eslint.config.mjs
@@ -94,13 +108,15 @@ npm install
 cp .env.example .env.local
 ```
 
-Edit `.env.local` and set your site URL:
+Edit `.env.local` and set your values:
 
 ```env
 NEXT_PUBLIC_SITE_URL=https://trendsmix.com
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-> On Vercel, the build system handles this automatically. You only need `.env.local` for local development if you want canonical URLs to point to a specific domain.
+> Get these values from your Supabase Dashboard → Settings → API.
 
 ### 4. Run the development server
 
@@ -133,41 +149,30 @@ To preview the production build locally:
 npm run build && npm start
 ```
 
-## Content Architecture
+## Supabase Setup
 
-Stories are stored in `public/data/stories.json` as a flat JSON array. Each story object follows this schema:
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Open **SQL Editor** and run the contents of `supabase/schema.sql`
+3. Create a **Storage bucket** named `media` with public access
+4. Create your admin user via **Authentication → Users → Add User**
+5. Promote the user to admin:
+   ```sql
+   UPDATE public.profiles SET role = 'admin' WHERE email = 'your@email.com';
+   ```
+6. Copy your project URL and anon key from **Settings → API**
 
-```json
-{
-  "slug": "the-last-signal",
-  "title": "The Last Signal",
-  "excerpt": "A radio operator picks up a transmission...",
-  "category": "mystery",
-  "readTime": 8,
-  "publishedAt": "2026-07-01",
-  "featuredImage": {
-    "alt": "Description of the image",
-    "src": null
-  },
-  "author": {
-    "name": "Elena Voss",
-    "role": "Mystery Writer",
-    "bio": "Elena writes atmospheric mysteries..."
-  },
-  "content": [
-    "First paragraph...",
-    "Second paragraph..."
-  ]
-}
-```
+## Admin Dashboard
 
-### Automation (n8n / CI)
+Access the admin dashboard at `/admin`. Features:
 
-To publish new stories automatically, overwrite `public/data/stories.json` and trigger a Vercel redeploy:
-
-1. **n8n workflow** writes the updated JSON to the repository via GitHub API.
-2. Vercel detects the commit and rebuilds the site.
-3. New stories appear on the next build — no database required.
+- **Dashboard** — stats overview, recent posts
+- **Posts** — create, edit, delete, search, filter, draft/publish toggle, featured toggle, slug editor, reading time, TipTap rich text editor
+- **Categories** — full CRUD
+- **Pages** — edit About, Contact, Privacy, Terms, Cookies, DMCA, AI Policy, Editorial Policy, Disclaimer
+- **Media Library** — upload images, delete, copy URL
+- **Settings** — site name, logo, social links, AdSense/Analytics IDs
+- **Users** — admin/editor role management
+- **SEO** — per-post meta title, description, canonical URL, OG image (in post editor)
 
 ## SEO
 
@@ -203,7 +208,10 @@ git push -u origin main
 3. Framework preset: **Next.js** (auto-detected).
 4. Click **Deploy**.
 
-No environment variables are required — `NEXT_PUBLIC_SITE_URL` defaults to `https://trendsmix.com`. Override it in the Vercel dashboard under **Settings → Environment Variables** if you use a different domain.
+Add environment variables in the Vercel dashboard under **Settings → Environment Variables**:
+   - `NEXT_PUBLIC_SITE_URL` — your domain (defaults to `https://trendsmix.com`)
+   - `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — your Supabase anon key
 
 ### 3. Custom Domain
 

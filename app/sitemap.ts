@@ -20,8 +20,8 @@ const STATIC_ROUTES: Array<{
   { path: "/dmca", changeFrequency: "yearly", priority: 0.3 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const stories = getAllStories();
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const stories = await getAllStories();
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map(
     ({ path, changeFrequency, priority }) => ({

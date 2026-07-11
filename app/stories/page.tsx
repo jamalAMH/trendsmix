@@ -13,8 +13,8 @@ export const metadata: Metadata = createPageMetadata({
   path: "/stories",
 });
 
-export default function StoriesPage() {
-  const stories = getAllStories();
+export default async function StoriesPage() {
+  const stories = await getAllStories();
 
   return (
     <>

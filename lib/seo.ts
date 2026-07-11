@@ -63,6 +63,9 @@ export function createMetadataBase(): Metadata {
     },
     alternates: {
       canonical: "/",
+      types: {
+        "application/rss+xml": `${getSiteUrl()}/feed.xml`,
+      },
     },
     category: "entertainment",
   };
@@ -88,6 +91,9 @@ export function createPageMetadata({
     description,
     alternates: {
       canonical,
+      types: {
+        "application/rss+xml": `${getSiteUrl()}/feed.xml`,
+      },
     },
     openGraph: {
       type: openGraphType,
@@ -114,30 +120,37 @@ export function createPageMetadata({
 
 export function createStoryMetadata(story: Story): Metadata {
   const path = `/stories/${story.slug}`;
-  const canonical = absoluteUrl(path);
+  const canonical = story.canonicalUrl || absoluteUrl(path);
+  const title = story.metaTitle || story.title;
+  const description = story.metaDescription || story.excerpt;
 
   return {
-    title: story.title,
-    description: story.excerpt,
+    title,
+    description,
     authors: [{ name: story.author.name }],
     alternates: {
       canonical,
+      types: {
+        "application/rss+xml": `${getSiteUrl()}/feed.xml`,
+      },
     },
     openGraph: {
       type: "article",
       url: canonical,
-      title: story.title,
-      description: story.excerpt,
+      title,
+      description,
       siteName: SITE_NAME,
       publishedTime: story.publishedAt,
       authors: [story.author.name],
       tags: [story.category],
+      ...(story.ogImage ? { images: [{ url: story.ogImage }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
-      title: story.title,
-      description: story.excerpt,
+      title,
+      description,
       creator: TWITTER_HANDLE,
+      ...(story.ogImage ? { images: [story.ogImage] } : {}),
     },
   };
 }
@@ -162,6 +175,9 @@ export function websiteJsonLd() {
 }
 
 export function articleJsonLd(story: Story) {
+  const imageUrl =
+    story.ogImage || story.featuredImage.src || undefined;
+
   return {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -169,6 +185,7 @@ export function articleJsonLd(story: Story) {
     description: story.excerpt,
     datePublished: story.publishedAt,
     dateModified: story.publishedAt,
+    ...(imageUrl ? { image: imageUrl } : {}),
     author: {
       "@type": "Person",
       name: story.author.name,

@@ -1,7 +1,3 @@
-/**
- * @deprecated Import from `@/lib/content` instead.
- * Re-exported for backward compatibility with existing routes and SEO helpers.
- */
 export {
   getAdjacentStories,
   getAllStories,

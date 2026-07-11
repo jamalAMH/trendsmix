@@ -21,34 +21,32 @@ export interface Story {
   slug: string;
   title: string;
   excerpt: string;
-  content: string[];
+  content: string;
   category: StoryCategory;
   readTime: number;
   publishedAt: string;
   featuredImage: FeaturedImage;
   author: Author;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
 }
-
-/** On-disk format for public/data/stories.json (n8n writes this file). */
-export type StoriesFile = Story[];
 
 export interface BreadcrumbItem {
   label: string;
   href?: string;
 }
 
-/**
- * Content repository contract. UI and pages depend on these functions only.
- * Swap the implementation in lib/content.ts (JSON → Supabase/REST) without
- * touching components or routes.
- */
 export interface StoryRepository {
-  getAllStories(): Story[];
-  getAllStorySlugs(): string[];
-  getStoryBySlug(slug: string): Story | undefined;
-  getFeaturedStory(): Story;
-  getLatestStories(limit?: number): Story[];
-  getTrendingStories(limit?: number): Story[];
-  getAdjacentStories(slug: string): { prev: Story | null; next: Story | null };
-  getRelatedStories(slug: string, limit?: number): Story[];
+  getAllStories(): Promise<Story[]>;
+  getAllStorySlugs(): Promise<string[]>;
+  getStoryBySlug(slug: string): Promise<Story | undefined>;
+  getFeaturedStory(): Promise<Story>;
+  getLatestStories(limit?: number): Promise<Story[]>;
+  getTrendingStories(limit?: number): Promise<Story[]>;
+  getAdjacentStories(
+    slug: string,
+  ): Promise<{ prev: Story | null; next: Story | null }>;
+  getRelatedStories(slug: string, limit?: number): Promise<Story[]>;
 }
