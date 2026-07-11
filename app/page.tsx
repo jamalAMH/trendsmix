@@ -10,6 +10,8 @@ import {
   getTrendingStories,
 } from "@/lib/stories";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = createPageMetadata({
   title: "Original Fiction Across Every Genre",
   description: SITE_DESCRIPTION,

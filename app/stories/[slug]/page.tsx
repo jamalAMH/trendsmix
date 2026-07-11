@@ -22,6 +22,8 @@ import {
 } from "@/lib/stories";
 import { formatDate } from "@/lib/utils";
 
+export const revalidate = 60;
+
 interface StoryDetailsPageProps {
   params: Promise<{ slug: string }>;
 }

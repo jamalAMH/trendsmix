@@ -6,6 +6,8 @@ import Newsletter from "@/components/shared/Newsletter";
 import { createPageMetadata } from "@/lib/seo";
 import { getAllStories } from "@/lib/stories";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = createPageMetadata({
   title: "All Stories",
   description:
