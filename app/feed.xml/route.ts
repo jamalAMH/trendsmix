@@ -22,7 +22,7 @@ export async function GET() {
       <guid isPermaLink="true">${siteUrl}/stories/${story.slug}</guid>
       <description>${escapeXml(story.excerpt)}</description>
       <pubDate>${new Date(story.publishedAt).toUTCString()}</pubDate>
-      <category>${escapeXml(story.category)}</category>
+      ${story.category ? `<category>${escapeXml(story.category)}</category>` : ""}
     </item>`,
     )
     .join("\n");

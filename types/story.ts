@@ -22,7 +22,7 @@ export interface Story {
   title: string;
   excerpt: string;
   content: string;
-  category: StoryCategory;
+  category?: StoryCategory;
   readTime: number;
   publishedAt: string;
   featuredImage: FeaturedImage;

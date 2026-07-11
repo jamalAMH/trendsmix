@@ -143,7 +143,7 @@ export function createStoryMetadata(story: Story): Metadata {
       siteName: SITE_NAME,
       publishedTime: story.publishedAt,
       authors: [story.author.name],
-      tags: [story.category],
+      ...(story.category ? { tags: [story.category] } : {}),
       ...(story.ogImage ? { images: [{ url: story.ogImage }] } : {}),
     },
     twitter: {
@@ -200,7 +200,7 @@ export function articleJsonLd(story: Story) {
       "@type": "WebPage",
       "@id": absoluteUrl(`/stories/${story.slug}`),
     },
-    articleSection: story.category,
+    ...(story.category ? { articleSection: story.category } : {}),
     inLanguage: "en-US",
   };
 }

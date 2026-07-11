@@ -94,7 +94,7 @@ export default async function StoryOpenGraphImage({
                   letterSpacing: "0.1em",
                 }}
               >
-                {formatCategory(story.category)}
+                {story.category ? formatCategory(story.category) : "Story"}
               </div>
               <span style={{ fontSize: 22, color: "#71717a" }}>
                 {story.readTime} min read

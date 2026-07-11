@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Story } from "@/types/story";
-import { formatCategory } from "@/lib/utils";
 
 interface StoryNavigationProps {
   prev: Story | null;
@@ -24,9 +23,6 @@ export default function StoryNavigation({ prev, next }: StoryNavigationProps) {
           <p className="mt-2 font-display text-lg text-white transition-colors group-hover:text-orange-400">
             {prev.title}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {formatCategory(prev.category)}
-          </p>
         </Link>
       ) : (
         <div />
@@ -42,9 +38,6 @@ export default function StoryNavigation({ prev, next }: StoryNavigationProps) {
           </span>
           <p className="mt-2 font-display text-lg text-white transition-colors group-hover:text-orange-400">
             {next.title}
-          </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {formatCategory(next.category)}
           </p>
         </Link>
       ) : (
