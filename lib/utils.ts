@@ -66,3 +66,13 @@ export function getAuthorInitials(name: string): string {
 export function cn(...classes: (string | false | undefined)[]): string {
   return classes.filter(Boolean).join(" ");
 }
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+}
