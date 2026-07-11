@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import SkipLink from "@/components/layout/SkipLink";
 import JsonLd from "@/components/seo/JsonLd";
 import { createMetadataBase, websiteJsonLd } from "@/lib/seo";
+import { getSetting } from "@/lib/settings";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +24,16 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
-export const metadata: Metadata = createMetadataBase();
+export async function generateMetadata(): Promise<Metadata> {
+  const verification = await getSetting("google_site_verification");
+
+  return {
+    ...createMetadataBase(),
+    ...(verification
+      ? { verification: { google: verification } }
+      : {}),
+  };
+}
 
 export default function RootLayout({
   children,
