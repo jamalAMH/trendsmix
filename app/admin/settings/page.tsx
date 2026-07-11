@@ -16,6 +16,7 @@ const FIELDS: Array<{ key: string; label: string; type?: string; group: string }
   { key: "adsense_client_id", label: "AdSense Client ID", group: "Monetization & Analytics" },
   { key: "adsense_slot_id", label: "AdSense Slot ID", group: "Monetization & Analytics" },
   { key: "analytics_id", label: "Google Analytics ID", group: "Monetization & Analytics" },
+  { key: "google_site_verification", label: "Google Search Console Verification", group: "Monetization & Analytics" },
 ];
 
 export default function SettingsPage() {

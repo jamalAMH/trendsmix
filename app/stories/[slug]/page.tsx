@@ -8,6 +8,7 @@ import ReadingProgress from "@/components/stories/ReadingProgress";
 import ShareButtons from "@/components/stories/ShareButtons";
 import StoryNavigation from "@/components/stories/StoryNavigation";
 import RelatedStories from "@/components/stories/RelatedStories";
+import AdSenseUnit from "@/components/ads/AdSenseUnit";
 import {
   absoluteUrl,
   articleJsonLd,
@@ -21,6 +22,7 @@ import {
   getStoryBySlug,
 } from "@/lib/stories";
 import { formatDate } from "@/lib/utils";
+import { getMonetizationSettings } from "@/lib/settings";
 
 export const revalidate = 60;
 
@@ -62,6 +64,7 @@ export default async function StoryDetailsPage({
   const { prev, next } = await getAdjacentStories(slug);
   const relatedStories = await getRelatedStories(slug, 3);
   const storyUrl = absoluteUrl(`/stories/${story.slug}`);
+  const monetization = await getMonetizationSettings();
 
   return (
     <>
@@ -159,6 +162,11 @@ export default async function StoryDetailsPage({
 
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
           <ShareButtons />
+
+          <AdSenseUnit
+            clientId={monetization.adsenseClientId}
+            slotId={monetization.adsenseSlotId}
+          />
 
           <div
             className="article-body mt-10 text-base leading-[1.85] text-zinc-300 sm:text-lg"

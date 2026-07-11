@@ -145,6 +145,24 @@ export default function ContactPage() {
       </form>
 
       <div className="mt-14 grid gap-8 border-t border-zinc-800/80 pt-10 sm:grid-cols-2">
+        <section aria-labelledby="contact-email-heading">
+          <h2
+            id="contact-email-heading"
+            className="text-lg font-semibold text-white"
+          >
+            Email Us Directly
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+            You can also reach us directly at{" "}
+            <a
+              href="mailto:contact@trendsmix.online"
+              className="text-orange-400 underline decoration-orange-400/30 underline-offset-2 transition-colors hover:text-orange-300"
+            >
+              contact@trendsmix.online
+            </a>
+          </p>
+        </section>
+
         <section aria-labelledby="contact-response-heading">
           <h2
             id="contact-response-heading"
