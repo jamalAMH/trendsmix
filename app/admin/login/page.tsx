@@ -39,7 +39,7 @@ export default function LoginPage() {
             required
             autoComplete="email"
             className="mt-1.5 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition-colors focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
-            placeholder="admin@trendsmix.com"
+            placeholder="admin@trendsmix.online"
           />
         </div>
 

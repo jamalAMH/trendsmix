@@ -1,5 +1,9 @@
 export const SITE_NAME = "TrendsMix";
 
+export const SITE_URL = "https://www.trendsmix.online";
+
+export const SITE_DOMAIN = "trendsmix.online";
+
 export const SITE_DESCRIPTION =
   "Original stories across every genre — horror, mystery, romance, fantasy, sci-fi, and drama. Fresh fiction published daily for readers who crave something unforgettable.";
 

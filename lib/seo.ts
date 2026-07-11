@@ -3,12 +3,13 @@ import {
   SITE_DESCRIPTION,
   SITE_KEYWORDS,
   SITE_NAME,
+  SITE_URL,
   TWITTER_HANDLE,
 } from "@/lib/constants";
 import type { Story } from "@/types/story";
 
 export function getSiteUrl(): string {
-  const url = process.env.NEXT_PUBLIC_SITE_URL ?? "https://trendsmix.com";
+  const url = process.env.NEXT_PUBLIC_SITE_URL ?? SITE_URL;
   return url.replace(/\/$/, "");
 }
 

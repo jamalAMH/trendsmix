@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
+import { SITE_DESCRIPTION, SITE_DOMAIN, SITE_NAME } from "@/lib/constants";
 import { OgMark } from "@/components/brand/og-mark";
 
 export const alt = `${SITE_NAME} — original fiction across every genre`;
@@ -146,7 +146,7 @@ export default function OpenGraphImage() {
                 letterSpacing: "0.05em",
               }}
             >
-              trendsmix.com
+              {SITE_DOMAIN}
             </span>
           </div>
         </div>

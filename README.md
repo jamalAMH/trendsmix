@@ -111,7 +111,7 @@ cp .env.example .env.local
 Edit `.env.local` and set your values:
 
 ```env
-NEXT_PUBLIC_SITE_URL=https://trendsmix.com
+NEXT_PUBLIC_SITE_URL=https://www.trendsmix.online
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
@@ -209,14 +209,14 @@ git push -u origin main
 4. Click **Deploy**.
 
 Add environment variables in the Vercel dashboard under **Settings → Environment Variables**:
-   - `NEXT_PUBLIC_SITE_URL` — your domain (defaults to `https://trendsmix.com`)
+   - `NEXT_PUBLIC_SITE_URL` — your domain (defaults to `https://www.trendsmix.online`)
    - `NEXT_PUBLIC_SUPABASE_URL` — your Supabase project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — your Supabase anon key
 
 ### 3. Custom Domain
 
 1. In the Vercel project dashboard, go to **Settings → Domains**.
-2. Add your domain (e.g. `trendsmix.com`).
+2. Add your domain (e.g. `www.trendsmix.online`).
 3. Configure DNS at your registrar:
    - **A record:** `76.76.21.21`
    - **CNAME** (for `www`): `cname.vercel-dns.com`
