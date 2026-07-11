@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import DOMPurify from "isomorphic-dompurify";
+import { sanitizeHtml } from "@/lib/sanitize";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
@@ -164,7 +164,7 @@ export default async function StoryDetailsPage({
             className="article-body mt-10 text-base leading-[1.85] text-zinc-300 sm:text-lg"
             itemProp="articleBody"
           >
-            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(story.content) }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(story.content) }} />
           </div>
 
           <footer className="mt-12 border-t border-zinc-800/80 pt-10">
