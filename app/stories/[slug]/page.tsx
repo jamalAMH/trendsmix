@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import DOMPurify from "isomorphic-dompurify";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import CategoryBadge from "@/components/shared/CategoryBadge";
 import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
 import JsonLd from "@/components/seo/JsonLd";
 import ReadingProgress from "@/components/stories/ReadingProgress";
@@ -21,7 +20,7 @@ import {
   getRelatedStories,
   getStoryBySlug,
 } from "@/lib/stories";
-import { formatDate, getCategoryGradient } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 interface StoryDetailsPageProps {
   params: Promise<{ slug: string }>;
@@ -92,10 +91,17 @@ export default async function StoryDetailsPage({
           </nav>
 
           <div
-            className={`relative aspect-[21/9] min-h-[280px] bg-gradient-to-br sm:min-h-[360px] ${getCategoryGradient(story.category)}`}
+            className="relative aspect-[21/9] min-h-[280px] bg-gradient-to-br from-orange-950 via-zinc-900 to-zinc-950 sm:min-h-[360px]"
             role="img"
-            aria-label={story.featuredImage.alt}
+            aria-label={story.featuredImage.alt || story.title}
           >
+            {story.featuredImage.src && (
+              <img
+                src={story.featuredImage.src}
+                alt={story.featuredImage.alt || story.title}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(249,115,22,0.12),transparent_55%)]" />
             <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
 
@@ -122,7 +128,6 @@ export default async function StoryDetailsPage({
               </Link>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
-                <CategoryBadge category={story.category} />
                 <ReadingTimeBadge minutes={story.readTime} />
                 <time
                   dateTime={story.publishedAt}

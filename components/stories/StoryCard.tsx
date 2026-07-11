@@ -1,8 +1,7 @@
 import Link from "next/link";
 import type { Story } from "@/types/story";
-import CategoryBadge from "@/components/shared/CategoryBadge";
 import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
-import { formatDate, getCategoryGradient } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 interface StoryCardProps {
   story: Story;
@@ -10,6 +9,8 @@ interface StoryCardProps {
 }
 
 export default function StoryCard({ story, priority = false }: StoryCardProps) {
+  const hasImage = story.featuredImage?.src;
+
   return (
     <article
       className={`card-shine group flex flex-col overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/30 transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/25 hover:shadow-xl hover:shadow-orange-500/5 ${priority ? "lg:flex-row lg:items-stretch" : ""}`}
@@ -18,13 +19,16 @@ export default function StoryCard({ story, priority = false }: StoryCardProps) {
         href={`/stories/${story.slug}`}
         className={`relative block overflow-hidden ${priority ? "lg:w-2/5" : "aspect-[16/10]"}`}
       >
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(story.category)} transition-transform duration-500 group-hover:scale-105`}
-        />
+        {hasImage ? (
+          <img
+            src={story.featuredImage.src!}
+            alt={story.featuredImage.alt || story.title}
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-950 via-zinc-900 to-zinc-950 transition-transform duration-500 group-hover:scale-105" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
-        <div className="absolute left-4 top-4">
-          <CategoryBadge category={story.category} />
-        </div>
       </Link>
 
       <div className={`flex flex-1 flex-col p-5 sm:p-6 ${priority ? "lg:justify-center" : ""}`}>
