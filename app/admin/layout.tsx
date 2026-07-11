@@ -57,7 +57,7 @@ export default async function AdminLayout({
 
   return (
     <div className="fixed inset-0 z-50 flex overflow-hidden bg-zinc-950">
-      <Sidebar />
+      <Sidebar role={profile?.role ?? "editor"} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <AdminHeader
           email={user.email ?? ""}

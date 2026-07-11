@@ -73,9 +73,13 @@ function Icon({ name, className }: { name: IconName; className?: string }) {
   }
 }
 
-export default function Sidebar() {
+export default function Sidebar({ role }: { role: "admin" | "editor" }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navItems = NAV_ITEMS.filter(
+    (item) => item.href !== "/admin/control" || role === "admin",
+  );
 
   function isActive(href: string) {
     if (href === "/admin") return pathname === "/admin";
@@ -94,7 +98,7 @@ export default function Sidebar() {
       </div>
 
       <ul className="flex-1 space-y-1 px-3 py-4">
-        {NAV_ITEMS.map((item) => (
+        {navItems.map((item) => (
           <li key={item.href}>
             <Link
               href={item.href}

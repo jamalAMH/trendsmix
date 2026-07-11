@@ -1,6 +1,20 @@
+import { createClient } from "@/lib/supabase/server";
 import ControlCenter from "@/components/admin/ControlCenter";
 
-export default function ControlPage() {
+export default async function ControlPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
   const systemStatus = {
     supabaseConfigured: !!(
       process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -10,5 +24,10 @@ export default function ControlPage() {
     n8nEnvConfigured: !!process.env.N8N_API_KEY,
   };
 
-  return <ControlCenter systemStatus={systemStatus} />;
+  return (
+    <ControlCenter
+      systemStatus={systemStatus}
+      isAdmin={profile?.role === "admin"}
+    />
+  );
 }

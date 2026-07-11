@@ -33,6 +33,7 @@ interface SystemStatus {
 
 interface ControlCenterProps {
   systemStatus: SystemStatus;
+  isAdmin: boolean;
 }
 
 const QUICK_LINKS = [
@@ -59,6 +60,7 @@ function Toggle({
   description,
   checked,
   onChange,
+  disabled = false,
 }: {
   id: string;
   name: string;
@@ -66,6 +68,7 @@ function Toggle({
   description: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
@@ -75,28 +78,34 @@ function Toggle({
         </label>
         <p className="mt-1 text-xs text-zinc-500">{description}</p>
       </div>
-      <button
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-orange-500" : "bg-zinc-700"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
-            checked ? "translate-x-5" : "translate-x-0"
-          }`}
-        />
+      <div className="flex shrink-0 items-center">
         <input type="hidden" name={name} value={checked ? "true" : "false"} />
-      </button>
+        <button
+          id={id}
+          type="button"
+          role="switch"
+          aria-checked={checked}
+          disabled={disabled}
+          onClick={() => onChange(!checked)}
+          className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
+            checked ? "bg-orange-500" : "bg-zinc-700"
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+              checked ? "translate-x-5" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </div>
     </div>
   );
 }
 
-export default function ControlCenter({ systemStatus }: ControlCenterProps) {
+export default function ControlCenter({
+  systemStatus,
+  isAdmin,
+}: ControlCenterProps) {
   const [stats, setStats] = useState<ControlStats>({
     totalPosts: 0,
     published: 0,
@@ -115,6 +124,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
   const [loading, setLoading] = useState(true);
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -160,17 +170,33 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
   }, []);
 
   function showMessage(text: string) {
+    setError(null);
     setMessage(text);
     setTimeout(() => setMessage(null), 3000);
   }
 
+  function showError(text: string) {
+    setMessage(null);
+    setError(text);
+  }
+
   function handleSaveSettings(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!isAdmin) {
+      showError("Admin role required. Ask an admin to upgrade your account.");
+      return;
+    }
+
     setSaved(false);
+    setError(null);
     const formData = new FormData(e.currentTarget);
 
     startTransition(async () => {
-      await updateControlSettings(formData);
+      const result = await updateControlSettings(formData);
+      if (!result.ok) {
+        showError(result.error);
+        return;
+      }
       setSaved(true);
       showMessage("Control settings saved.");
       setTimeout(() => setSaved(false), 2000);
@@ -179,13 +205,22 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
   function runAction(
     label: string,
-    action: () => Promise<void>,
+    action: () => Promise<{ ok: true } | { ok: false; error: string }>,
     confirmText?: string,
   ) {
+    if (!isAdmin) {
+      showError("Admin role required. Ask an admin to upgrade your account.");
+      return;
+    }
     if (confirmText && !confirm(confirmText)) return;
 
     startTransition(async () => {
-      await action();
+      const result = await action();
+      if (!result.ok) {
+        showError(result.error);
+        return;
+      }
+
       showMessage(label);
 
       const supabase = createClient();
@@ -221,9 +256,23 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
   return (
     <div className="space-y-8">
+      {!isAdmin && (
+        <div className="rounded-lg bg-amber-500/10 px-4 py-3 text-sm text-amber-300 ring-1 ring-amber-500/20">
+          Your account is <strong>editor</strong>, not <strong>admin</strong>.
+          Control Center actions are read-only until an admin upgrades your role
+          in Supabase or Users.
+        </div>
+      )}
+
       {message && (
         <div className="rounded-lg bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 ring-1 ring-emerald-500/20">
           {message}
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400 ring-1 ring-red-500/20">
+          {error}
         </div>
       )}
 
@@ -294,6 +343,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
               label="Maintenance Mode"
               description="Hide the public site from visitors. Admin stays accessible."
               checked={settings.maintenance_mode}
+              disabled={!isAdmin}
               onChange={(checked) =>
                 setSettings((s) => ({ ...s, maintenance_mode: checked }))
               }
@@ -305,6 +355,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
               label="n8n Auto-Publish"
               description="Allow automated posts via /api/posts from n8n."
               checked={settings.n8n_enabled}
+              disabled={!isAdmin}
               onChange={(checked) =>
                 setSettings((s) => ({ ...s, n8n_enabled: checked }))
               }
@@ -325,6 +376,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
                 onChange={(e) =>
                   setSettings((s) => ({ ...s, n8n_api_key: e.target.value }))
                 }
+                disabled={!isAdmin}
                 placeholder="Must match N8N_API_KEY in .env.local"
                 className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-orange-500"
               />
@@ -336,7 +388,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || !isAdmin}
               className="rounded-lg bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-orange-400 disabled:opacity-50"
             >
               {pending ? "Saving…" : "Save Controls"}
@@ -351,7 +403,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-3">
             <button
               type="button"
-              disabled={pending || stats.drafts === 0}
+              disabled={pending || !isAdmin || stats.drafts === 0}
               onClick={() =>
                 runAction(
                   "All drafts published.",
@@ -366,7 +418,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
             <button
               type="button"
-              disabled={pending || stats.published === 0}
+              disabled={pending || !isAdmin || stats.published === 0}
               onClick={() =>
                 runAction(
                   "All posts unpublished.",
@@ -381,7 +433,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
             <button
               type="button"
-              disabled={pending || stats.featured === 0}
+              disabled={pending || !isAdmin || stats.featured === 0}
               onClick={() =>
                 runAction(
                   "Featured flags cleared.",
@@ -396,7 +448,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
 
             <button
               type="button"
-              disabled={pending}
+              disabled={pending || !isAdmin}
               onClick={() => runAction("Site cache refreshed.", revalidateSite)}
               className="w-full rounded-lg border border-orange-500/20 bg-orange-500/10 px-4 py-2.5 text-left text-sm text-orange-400 transition-colors hover:bg-orange-500/20 disabled:opacity-40"
             >
@@ -411,7 +463,7 @@ export default function ControlCenter({ systemStatus }: ControlCenterProps) {
             </p>
             <button
               type="button"
-              disabled={pending || stats.drafts === 0}
+              disabled={pending || !isAdmin || stats.drafts === 0}
               onClick={() =>
                 runAction(
                   "All drafts deleted.",
