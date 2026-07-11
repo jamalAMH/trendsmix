@@ -4,9 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SkipLink from "@/components/layout/SkipLink";
 import JsonLd from "@/components/seo/JsonLd";
-import SiteScripts from "@/components/ads/SiteScripts";
 import { createMetadataBase, websiteJsonLd } from "@/lib/seo";
-import { getMonetizationSettings } from "@/lib/settings";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -25,22 +23,9 @@ const instrumentSerif = Instrument_Serif({
   weight: ["400"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getMonetizationSettings();
+export const metadata: Metadata = createMetadataBase();
 
-  return {
-    ...createMetadataBase(),
-    ...(settings.googleSiteVerification
-      ? {
-          verification: {
-            google: settings.googleSiteVerification,
-          },
-        }
-      : {}),
-  };
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -51,7 +36,6 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full dark antialiased`}
     >
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
-        <SiteScripts />
         <SkipLink />
         <JsonLd data={websiteJsonLd()} />
         <Header />

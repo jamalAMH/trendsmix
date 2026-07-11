@@ -14,7 +14,6 @@ const ALLOWED_KEYS = new Set([
   "adsense_client_id",
   "adsense_slot_id",
   "analytics_id",
-  "google_site_verification",
 ]);
 
 export async function updateSettings(formData: FormData) {
@@ -22,17 +21,7 @@ export async function updateSettings(formData: FormData) {
 
   for (const key of ALLOWED_KEYS) {
     const value = (formData.get(key) as string) ?? "";
-    const { data: existing } = await supabase
-      .from("settings")
-      .select("id")
-      .eq("key", key)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase.from("settings").update({ value }).eq("key", key);
-    } else {
-      await supabase.from("settings").insert({ key, value });
-    }
+    await supabase.from("settings").update({ value }).eq("key", key);
   }
 
   revalidatePath("/admin/settings");

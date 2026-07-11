@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Hero from "@/components/home/Hero";
 import StoryGrid from "@/components/stories/StoryGrid";
+import Newsletter from "@/components/shared/Newsletter";
 import { SITE_DESCRIPTION } from "@/lib/constants";
 import { createPageMetadata } from "@/lib/seo";
 import {
@@ -12,7 +13,7 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Gripping Stories That Keep You Reading",
+  title: "Original Fiction Across Every Genre",
   description: SITE_DESCRIPTION,
   path: "/",
 });
@@ -43,6 +44,7 @@ export default async function Home() {
         />
       </div>
 
+      <Newsletter />
     </>
   );
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import StoryGrid from "@/components/stories/StoryGrid";
 import SearchBar from "@/components/stories/SearchBar";
 import Pagination from "@/components/stories/Pagination";
+import Newsletter from "@/components/shared/Newsletter";
 import { createPageMetadata } from "@/lib/seo";
 import { getAllStories } from "@/lib/stories";
 
@@ -10,7 +11,7 @@ export const revalidate = 60;
 export const metadata: Metadata = createPageMetadata({
   title: "All Stories",
   description:
-    "Browse the full TrendsMix library of gripping drama, revenge, and real-life inspired fiction.",
+    "Browse the full TrendsMix library of original fiction across horror, mystery, romance, fantasy, sci-fi, and drama.",
   path: "/stories",
 });
 
@@ -28,8 +29,8 @@ export default async function StoriesPage() {
             All Stories
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            Browse our full collection of gripping drama, revenge, and
-            real-life inspired fiction.
+            Browse our full collection of original fiction across horror, mystery,
+            romance, fantasy, and more.
           </p>
 
           <div className="mt-8 max-w-xl">
@@ -48,6 +49,7 @@ export default async function StoriesPage() {
         <Pagination currentPage={1} totalPages={3} />
       </div>
 
+      <Newsletter />
     </>
   );
 }
