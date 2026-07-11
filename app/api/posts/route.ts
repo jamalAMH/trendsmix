@@ -7,6 +7,7 @@ interface CreatePostBody {
   title: string;
   article_content: string;
   image?: string;
+  "url image"?: string;
 }
 
 function getSupabase() {
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
     p_status: "published",
     p_featured: false,
     p_read_time: 5,
-    p_featured_image: body.image?.trim() || null,
+    p_featured_image: body.image?.trim() || body["url image"]?.trim() || null,
     p_featured_image_alt: "",
     p_meta_title: null,
     p_meta_description: null,

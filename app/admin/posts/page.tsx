@@ -19,8 +19,11 @@ export default function PostsPage() {
       .from("posts")
       .select("*, categories(*), profiles(*)")
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
+        if (error) {
+          console.error("Failed to fetch posts:", error.message);
+        }
         setPosts((data as PostWithRelations[]) ?? []);
         setLoading(false);
       });
