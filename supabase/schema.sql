@@ -296,7 +296,46 @@ create index idx_page_views_country on public.page_views (country);
 create index idx_page_views_path on public.page_views (path);
 
 
--- 8. Utility: updated_at trigger ----------------------------------------------
+-- 8. Active Sessions (live visitors) ------------------------------------------
+
+create table public.active_sessions (
+  session_id text primary key,
+  path text not null,
+  referrer text default '',
+  source text not null default 'Direct',
+  country text not null default 'Unknown',
+  last_seen timestamptz not null default now()
+);
+
+alter table public.active_sessions enable row level security;
+
+create policy "Anyone can upsert active sessions"
+  on public.active_sessions for insert
+  to anon, authenticated
+  with check (true);
+
+create policy "Anyone can update active sessions"
+  on public.active_sessions for update
+  to anon, authenticated
+  using (true)
+  with check (true);
+
+create policy "Anyone can delete stale sessions"
+  on public.active_sessions for delete
+  to anon, authenticated
+  using (true);
+
+create policy "Admins can read active sessions"
+  on public.active_sessions for select
+  to authenticated
+  using (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+create index idx_active_sessions_last_seen on public.active_sessions (last_seen desc);
+
+
+-- 9. Utility: updated_at trigger ----------------------------------------------
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -343,6 +382,9 @@ grant select on public.settings to anon;
 
 grant insert on public.page_views to anon;
 grant select, insert on public.page_views to authenticated;
+
+grant insert, update, delete on public.active_sessions to anon;
+grant select, insert, update, delete on public.active_sessions to authenticated;
 
 grant all on public.posts to authenticated;
 grant all on public.categories to authenticated;

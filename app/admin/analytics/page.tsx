@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import StatsCard from "@/components/admin/StatsCard";
-import { getAnalyticsSummary, type AnalyticsSummary } from "@/lib/actions/analytics";
+import { getAnalyticsSummary, getLiveVisitors, type AnalyticsSummary, type LiveVisitorsResult } from "@/lib/actions/analytics";
 
 function BarRow({
   label,
@@ -31,8 +31,16 @@ function BarRow({
   );
 }
 
+function timeAgo(iso: string): string {
+  const sec = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (sec < 10) return "just now";
+  if (sec < 60) return `${sec}s ago`;
+  return `${Math.floor(sec / 60)}m ago`;
+}
+
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
+  const [live, setLive] = useState<LiveVisitorsResult>({ count: 0, visitors: [] });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, startTransition] = useTransition();
@@ -51,8 +59,17 @@ export default function AnalyticsPage() {
     });
   }
 
+  function loadLive() {
+    getLiveVisitors()
+      .then(setLive)
+      .catch(() => setLive({ count: 0, visitors: [] }));
+  }
+
   useEffect(() => {
     load();
+    loadLive();
+    const interval = setInterval(loadLive, 10_000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -110,6 +127,55 @@ export default function AnalyticsPage() {
         >
           {pending ? "Refreshing…" : "Refresh"}
         </button>
+      </div>
+
+      <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-400" />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                {live.count} Live {live.count === 1 ? "Visitor" : "Visitors"}
+              </h2>
+              <p className="text-xs text-zinc-500">
+                Nas li online daba — updated every 10s
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+            LIVE
+          </span>
+        </div>
+
+        {live.visitors.length === 0 ? (
+          <p className="mt-4 text-sm text-zinc-500">
+            No one on the site right now.
+          </p>
+        ) : (
+          <div className="mt-4 divide-y divide-zinc-800/50 rounded-lg border border-zinc-800/50">
+            {live.visitors.map((v) => (
+              <div
+                key={v.sessionId}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-zinc-200">
+                    {v.label}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {v.countryLabel} &middot; {v.source}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-emerald-400">
+                  {timeAgo(v.lastSeen)}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

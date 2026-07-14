@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
+const HEARTBEAT_MS = 30_000;
+
 function getSessionId(): string {
   const key = "tmx_session";
   let id = sessionStorage.getItem(key);
@@ -13,26 +15,46 @@ function getSessionId(): string {
   return id;
 }
 
+function sendTrack(path: string, referrer: string, sessionId: string) {
+  fetch("/api/analytics/track", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path, referrer, sessionId }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
+function sendHeartbeat(path: string, referrer: string, sessionId: string) {
+  fetch("/api/analytics/heartbeat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path, referrer, sessionId }),
+    keepalive: true,
+  }).catch(() => {});
+}
+
 export default function AnalyticsTracker() {
   const pathname = usePathname();
   const lastTracked = useRef<string | null>(null);
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
-    if (lastTracked.current === pathname) return;
-    lastTracked.current = pathname;
 
     const referrer = document.referrer;
     const sessionId = getSessionId();
 
-    fetch("/api/analytics/track", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: pathname, referrer, sessionId }),
-      keepalive: true,
-    }).catch(() => {
-      // Tracking should never break the page.
-    });
+    if (lastTracked.current !== pathname) {
+      lastTracked.current = pathname;
+      sendTrack(pathname, referrer, sessionId);
+    }
+
+    sendHeartbeat(pathname, referrer, sessionId);
+
+    const interval = setInterval(() => {
+      sendHeartbeat(pathname, document.referrer, sessionId);
+    }, HEARTBEAT_MS);
+
+    return () => clearInterval(interval);
   }, [pathname]);
 
   return null;

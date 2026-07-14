@@ -83,3 +83,12 @@ export interface PageView {
   user_agent: string;
   created_at: string;
 }
+
+export interface ActiveSession {
+  session_id: string;
+  path: string;
+  referrer: string;
+  source: string;
+  country: string;
+  last_seen: string;
+}
