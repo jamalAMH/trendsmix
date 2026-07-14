@@ -71,3 +71,15 @@ export interface Media {
   uploaded_by: string | null;
   created_at: string;
 }
+
+export interface PageView {
+  id: string;
+  path: string;
+  referrer: string;
+  source: string;
+  country: string;
+  city: string | null;
+  session_id: string | null;
+  user_agent: string;
+  created_at: string;
+}

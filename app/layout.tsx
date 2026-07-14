@@ -4,6 +4,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import SkipLink from "@/components/layout/SkipLink";
 import JsonLd from "@/components/seo/JsonLd";
+import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
+import GoogleAnalyticsScript from "@/components/analytics/GoogleAnalyticsScript";
 import { createMetadataBase, websiteJsonLd } from "@/lib/seo";
 import { getSetting } from "@/lib/settings";
 import "./globals.css";
@@ -46,6 +48,8 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full dark antialiased`}
     >
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
+        <GoogleAnalyticsScript />
+        <AnalyticsTracker />
         <SkipLink />
         <JsonLd data={websiteJsonLd()} />
         <Header />

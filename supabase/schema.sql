@@ -262,7 +262,41 @@ create policy "Admins can manage media"
   );
 
 
--- 7. Utility: updated_at trigger ----------------------------------------------
+-- 7. Page Views (analytics) ----------------------------------------------------
+
+create table public.page_views (
+  id uuid default gen_random_uuid() primary key,
+  path text not null,
+  referrer text default '',
+  source text not null default 'Direct',
+  country text not null default 'Unknown',
+  city text,
+  session_id text,
+  user_agent text default '',
+  created_at timestamptz not null default now()
+);
+
+alter table public.page_views enable row level security;
+
+create policy "Anyone can log page views"
+  on public.page_views for insert
+  to anon, authenticated
+  with check (true);
+
+create policy "Admins can read page views"
+  on public.page_views for select
+  to authenticated
+  using (
+    exists (select 1 from public.profiles where id = auth.uid() and role = 'admin')
+  );
+
+create index idx_page_views_created_at on public.page_views (created_at desc);
+create index idx_page_views_source on public.page_views (source);
+create index idx_page_views_country on public.page_views (country);
+create index idx_page_views_path on public.page_views (path);
+
+
+-- 8. Utility: updated_at trigger ----------------------------------------------
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -306,6 +340,9 @@ grant select on public.categories to anon;
 grant select on public.profiles to anon;
 grant select on public.pages to anon;
 grant select on public.settings to anon;
+
+grant insert on public.page_views to anon;
+grant select, insert on public.page_views to authenticated;
 
 grant all on public.posts to authenticated;
 grant all on public.categories to authenticated;

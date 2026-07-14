@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 const TITLE_MAP: Record<string, string> = {
   "/admin": "Dashboard",
+  "/admin/analytics": "Analytics",
   "/admin/control": "Control Center",
   "/admin/posts": "Posts",
   "/admin/posts/new": "New Post",
