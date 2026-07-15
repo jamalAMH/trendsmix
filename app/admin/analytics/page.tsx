@@ -2,7 +2,17 @@
 
 import { useEffect, useState, useTransition } from "react";
 import StatsCard from "@/components/admin/StatsCard";
-import { getAnalyticsSummary, getLiveVisitors, type AnalyticsSummary, type DailyTraffic, type LiveVisitorsResult } from "@/lib/actions/analytics";
+import {
+  getAnalyticsSummary,
+  getLiveVisitors,
+  type AnalyticsSummary,
+  type DailyTraffic,
+  type LiveVisitorsResult,
+} from "@/lib/actions/analytics";
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 function BarRow({
   label,
@@ -49,65 +59,64 @@ function formatDayLabel(date: string): string {
   });
 }
 
-function DailyTrafficCard({ day }: { day: DailyTraffic }) {
+function DayTrafficDetail({ day }: { day: DailyTraffic }) {
   const maxSource = day.sources[0]?.views ?? 1;
   const maxCountry = day.countries[0]?.views ?? 1;
+  const maxPage = day.pages[0]?.views ?? 1;
+
+  if (day.views === 0) {
+    return (
+      <p className="text-sm text-zinc-500">No traffic recorded for this day.</p>
+    );
+  }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-sm font-semibold text-white">
-            {formatDayLabel(day.date)}
-          </h2>
-          <p className="text-xs text-zinc-500">{day.date}</p>
-        </div>
-        <div className="flex gap-4 text-sm">
-          <span className="text-zinc-400">
-            <strong className="text-white">{day.views}</strong> views
-          </span>
-          <span className="text-zinc-400">
-            <strong className="text-white">{day.visitors}</strong> visitors
-          </span>
+    <div className="grid gap-6 lg:grid-cols-3">
+      <div>
+        <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Mnin jay trafik
+        </h3>
+        <div className="space-y-3">
+          {day.sources.map((item) => (
+            <BarRow
+              key={item.source}
+              label={item.source}
+              value={item.views}
+              max={maxSource}
+            />
+          ))}
         </div>
       </div>
-
-      {day.views === 0 ? (
-        <p className="text-sm text-zinc-500">No traffic this day.</p>
-      ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div>
-            <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Mnin jay trafik
-            </h3>
-            <div className="space-y-3">
-              {day.sources.map((item) => (
-                <BarRow
-                  key={item.source}
-                  label={item.source}
-                  value={item.views}
-                  max={maxSource}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              Blads
-            </h3>
-            <div className="space-y-3">
-              {day.countries.map((item) => (
-                <BarRow
-                  key={item.country}
-                  label={item.label}
-                  value={item.views}
-                  max={maxCountry}
-                />
-              ))}
-            </div>
-          </div>
+      <div>
+        <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Blads
+        </h3>
+        <div className="space-y-3">
+          {day.countries.map((item) => (
+            <BarRow
+              key={item.country}
+              label={item.label}
+              value={item.views}
+              max={maxCountry}
+            />
+          ))}
         </div>
-      )}
+      </div>
+      <div>
+        <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+          Top Pages
+        </h3>
+        <div className="space-y-3">
+          {day.pages.map((item) => (
+            <BarRow
+              key={item.path}
+              label={item.label}
+              value={item.views}
+              max={maxPage}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -122,6 +131,7 @@ function timeAgo(iso: string): string {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [live, setLive] = useState<LiveVisitorsResult>({ count: 0, visitors: [] });
+  const [selectedDate, setSelectedDate] = useState(todayIso());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, startTransition] = useTransition();
@@ -156,6 +166,7 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
+        <div className="h-14 animate-pulse rounded-xl border border-zinc-800 bg-zinc-900/50" />
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
@@ -189,12 +200,23 @@ export default function AnalyticsPage() {
 
   if (!data) return null;
 
+  const selectedDay =
+    data.dailyTraffic.find((d) => d.date === selectedDate) ?? {
+      date: selectedDate,
+      views: 0,
+      visitors: 0,
+      sources: [],
+      countries: [],
+      pages: [],
+    };
+
+  const minDate = data.dailyTraffic.at(-1)?.date ?? selectedDate;
+  const maxDate = data.dailyTraffic[0]?.date ?? selectedDate;
   const maxDaily = Math.max(...data.dailyViews.map((d) => d.views), 1);
-  const chartDays = [...data.dailyViews];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-zinc-400">
           Traffic overview — where visitors come from and how many pages they view.
         </p>
@@ -206,6 +228,53 @@ export default function AnalyticsPage() {
         >
           {pending ? "Refreshing…" : "Refresh"}
         </button>
+      </div>
+
+      <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-5">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Choisir nhar</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              Khayar nhar bach tchouf analytics dyalo
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSelectedDate(todayIso())}
+              className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                selectedDate === todayIso()
+                  ? "bg-orange-500 text-white"
+                  : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              }`}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const d = new Date();
+                d.setDate(d.getDate() - 1);
+                setSelectedDate(d.toISOString().slice(0, 10));
+              }}
+              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+            >
+              Yesterday
+            </button>
+            <input
+              type="date"
+              value={selectedDate}
+              min={minDate}
+              max={maxDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-white"
+            />
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-orange-300">
+          {formatDayLabel(selectedDate)} — {selectedDay.views} views,{" "}
+          {selectedDay.visitors} visitors
+        </p>
       </div>
 
       <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
@@ -259,32 +328,42 @@ export default function AnalyticsPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
-          label="Views Today"
-          value={data.todayViews}
-          sub="Total page views"
+          label="Views"
+          value={selectedDay.views}
+          sub={formatDayLabel(selectedDate)}
         />
         <StatsCard
-          label="Visitors Today"
-          value={data.todayVisitors}
+          label="Visitors"
+          value={selectedDay.visitors}
           sub="Unique sessions"
         />
         <StatsCard
           label="Views (7 days)"
           value={data.weekViews}
-          sub="Last week"
+          sub="Last week total"
         />
         <StatsCard
           label="Views (30 days)"
           value={data.monthViews}
-          sub="Last month"
+          sub="Last month total"
         />
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white">Last 7 Days</h2>
+        <h2 className="mb-1 text-sm font-semibold text-white">Last 7 Days</h2>
+        <p className="mb-4 text-xs text-zinc-500">Click a day to view its analytics</p>
         <div className="grid gap-3 sm:grid-cols-7">
-          {chartDays.map((day) => (
-            <div key={day.date} className="text-center">
+          {data.dailyViews.map((day) => (
+            <button
+              key={day.date}
+              type="button"
+              onClick={() => setSelectedDate(day.date)}
+              className={`rounded-lg p-2 text-center transition-colors ${
+                selectedDate === day.date
+                  ? "bg-orange-500/10 ring-1 ring-orange-500/40"
+                  : "hover:bg-zinc-800/50"
+              }`}
+            >
               <div className="mx-auto flex h-24 w-full max-w-[48px] items-end justify-center rounded-lg bg-zinc-950/50 px-1">
                 <div
                   className="w-full rounded-t bg-orange-500/80"
@@ -295,25 +374,23 @@ export default function AnalyticsPage() {
               </div>
               <p className="mt-2 text-xs font-medium text-white">{day.views}</p>
               <p className="text-[10px] text-zinc-500">
-                {new Date(day.date).toLocaleDateString(undefined, {
+                {new Date(day.date + "T12:00:00").toLocaleDateString(undefined, {
                   weekday: "short",
                 })}
               </p>
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-sm font-semibold text-white">Traffic by Day</h2>
-          <p className="mt-1 text-xs text-zinc-500">
-            Kol nhar bohdo — mnin jay trafik, bla ma ytjm3
-          </p>
+      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+        <h2 className="text-sm font-semibold text-white">
+          {formatDayLabel(selectedDate)}
+        </h2>
+        <p className="mt-1 text-xs text-zinc-500">{selectedDate}</p>
+        <div className="mt-5">
+          <DayTrafficDetail day={selectedDay} />
         </div>
-        {data.dailyTraffic.map((day) => (
-          <DailyTrafficCard key={day.date} day={day} />
-        ))}
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">
