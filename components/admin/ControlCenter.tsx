@@ -29,6 +29,8 @@ interface SystemStatus {
   supabaseConfigured: boolean;
   siteUrl: string;
   n8nEnvConfigured: boolean;
+  visitorIp: string;
+  visitorCountry: string;
 }
 
 interface ControlCenterProps {
@@ -118,6 +120,8 @@ export default function ControlCenter({
   });
   const [settings, setSettings] = useState({
     maintenance_mode: false,
+    geo_block_africa: true,
+    geo_allowed_ips: "",
     n8n_enabled: true,
     n8n_api_key: "",
   });
@@ -160,6 +164,8 @@ export default function ControlCenter({
 
       setSettings({
         maintenance_mode: map.maintenance_mode === "true",
+        geo_block_africa: map.geo_block_africa !== "false",
+        geo_allowed_ips: map.geo_allowed_ips ?? "",
         n8n_enabled: map.n8n_enabled !== "false",
         n8n_api_key: map.n8n_api_key ?? "",
       });
@@ -350,6 +356,49 @@ export default function ControlCenter({
             />
 
             <Toggle
+              id="geo_block_africa"
+              name="geo_block_africa"
+              label="Block Africa (geo)"
+              description="Block all African countries including Morocco. Only whitelisted IPs can access."
+              checked={settings.geo_block_africa}
+              disabled={!isAdmin}
+              onChange={(checked) =>
+                setSettings((s) => ({ ...s, geo_block_africa: checked }))
+              }
+            />
+
+            <div>
+              <label
+                htmlFor="geo_allowed_ips"
+                className="block text-xs font-medium text-zinc-400"
+              >
+                Allowed IPs (Morocco bypass)
+              </label>
+              <input
+                id="geo_allowed_ips"
+                name="geo_allowed_ips"
+                type="text"
+                value={settings.geo_allowed_ips}
+                onChange={(e) =>
+                  setSettings((s) => ({ ...s, geo_allowed_ips: e.target.value }))
+                }
+                disabled={!isAdmin}
+                placeholder="e.g. 41.143.12.34"
+                className="mt-1 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white placeholder:text-zinc-600 disabled:opacity-50"
+              />
+              <p className="mt-1 text-xs text-zinc-500">
+                Your IP now:{" "}
+                <strong className="text-zinc-300">
+                  {systemStatus.visitorIp || "Unknown"}
+                </strong>
+                {systemStatus.visitorCountry
+                  ? ` (${systemStatus.visitorCountry})`
+                  : ""}
+                . Add it here so you can access from Morocco.
+              </p>
+            </div>
+
+            <Toggle
               id="n8n_enabled"
               name="n8n_enabled"
               label="n8n Auto-Publish"
@@ -499,6 +548,15 @@ export default function ControlCenter({
             ok={!settings.maintenance_mode}
             detail={
               settings.maintenance_mode ? "Site is in maintenance" : "Site is live"
+            }
+          />
+          <StatusItem
+            label="Geo Block (Africa)"
+            ok={!settings.geo_block_africa}
+            detail={
+              settings.geo_block_africa
+                ? "Africa blocked — whitelist your IP"
+                : "Africa access allowed"
             }
           />
           <StatusItem

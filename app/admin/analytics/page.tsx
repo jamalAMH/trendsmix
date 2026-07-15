@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import StatsCard from "@/components/admin/StatsCard";
-import { getAnalyticsSummary, getLiveVisitors, type AnalyticsSummary, type LiveVisitorsResult } from "@/lib/actions/analytics";
+import { getAnalyticsSummary, getLiveVisitors, type AnalyticsSummary, type DailyTraffic, type LiveVisitorsResult } from "@/lib/actions/analytics";
 
 function BarRow({
   label,
@@ -27,6 +27,87 @@ function BarRow({
           style={{ width: `${pct}%` }}
         />
       </div>
+    </div>
+  );
+}
+
+function formatDayLabel(date: string): string {
+  const d = new Date(date + "T12:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const day = new Date(d);
+  day.setHours(0, 0, 0, 0);
+  const diff = Math.round((today.getTime() - day.getTime()) / 86400000);
+
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+
+  return d.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function DailyTrafficCard({ day }: { day: DailyTraffic }) {
+  const maxSource = day.sources[0]?.views ?? 1;
+  const maxCountry = day.countries[0]?.views ?? 1;
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-sm font-semibold text-white">
+            {formatDayLabel(day.date)}
+          </h2>
+          <p className="text-xs text-zinc-500">{day.date}</p>
+        </div>
+        <div className="flex gap-4 text-sm">
+          <span className="text-zinc-400">
+            <strong className="text-white">{day.views}</strong> views
+          </span>
+          <span className="text-zinc-400">
+            <strong className="text-white">{day.visitors}</strong> visitors
+          </span>
+        </div>
+      </div>
+
+      {day.views === 0 ? (
+        <p className="text-sm text-zinc-500">No traffic this day.</p>
+      ) : (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+              Mnin jay trafik
+            </h3>
+            <div className="space-y-3">
+              {day.sources.map((item) => (
+                <BarRow
+                  key={item.source}
+                  label={item.source}
+                  value={item.views}
+                  max={maxSource}
+                />
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
+              Blads
+            </h3>
+            <div className="space-y-3">
+              {day.countries.map((item) => (
+                <BarRow
+                  key={item.country}
+                  label={item.label}
+                  value={item.views}
+                  max={maxCountry}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -108,10 +189,8 @@ export default function AnalyticsPage() {
 
   if (!data) return null;
 
-  const maxSource = data.topSources[0]?.views ?? 1;
-  const maxCountry = data.topCountries[0]?.views ?? 1;
-  const maxPage = data.topPages[0]?.views ?? 1;
   const maxDaily = Math.max(...data.dailyViews.map((d) => d.views), 1);
+  const chartDays = [...data.dailyViews];
 
   return (
     <div className="space-y-6">
@@ -204,7 +283,7 @@ export default function AnalyticsPage() {
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
         <h2 className="mb-4 text-sm font-semibold text-white">Last 7 Days</h2>
         <div className="grid gap-3 sm:grid-cols-7">
-          {data.dailyViews.map((day) => (
+          {chartDays.map((day) => (
             <div key={day.date} className="text-center">
               <div className="mx-auto flex h-24 w-full max-w-[48px] items-end justify-center rounded-lg bg-zinc-950/50 px-1">
                 <div
@@ -225,67 +304,16 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white">
-            Traffic Sources
-          </h2>
-          <p className="mb-4 text-xs text-zinc-500">Mnin jay l-zouwar (Google, Facebook...)</p>
-          {data.topSources.length === 0 ? (
-            <p className="text-sm text-zinc-500">No traffic recorded yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {data.topSources.map((item) => (
-                <BarRow
-                  key={item.source}
-                  label={item.source}
-                  value={item.views}
-                  max={maxSource}
-                />
-              ))}
-            </div>
-          )}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-white">Traffic by Day</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Kol nhar bohdo — mnin jay trafik, bla ma ytjm3
+          </p>
         </div>
-
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <h2 className="mb-4 text-sm font-semibold text-white">
-            Countries
-          </h2>
-          <p className="mb-4 text-xs text-zinc-500">Mnin jay l-blads (Morocco, France, USA...)</p>
-          {data.topCountries.length === 0 ? (
-            <p className="text-sm text-zinc-500">No traffic recorded yet.</p>
-          ) : (
-            <div className="space-y-4">
-              {data.topCountries.map((item) => (
-                <BarRow
-                  key={item.country}
-                  label={item.label}
-                  value={item.views}
-                  max={maxCountry}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="mb-4 text-sm font-semibold text-white">Top Pages</h2>
-        <p className="mb-4 text-xs text-zinc-500">Chno kaytchouf bzaf</p>
-        {data.topPages.length === 0 ? (
-          <p className="text-sm text-zinc-500">No traffic recorded yet.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {data.topPages.map((item) => (
-              <BarRow
-                key={item.path}
-                label={item.label}
-                value={item.views}
-                max={maxPage}
-              />
-            ))}
-          </div>
-        )}
+        {data.dailyTraffic.map((day) => (
+          <DailyTrafficCard key={day.date} day={day} />
+        ))}
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/30 p-4">

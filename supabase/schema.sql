@@ -228,6 +228,8 @@ insert into public.settings (key, value) values
   ('analytics_id', ''),
   ('google_site_verification', ''),
   ('maintenance_mode', 'false'),
+  ('geo_block_africa', 'true'),
+  ('geo_allowed_ips', ''),
   ('n8n_enabled', 'true'),
   ('n8n_api_key', '');
 

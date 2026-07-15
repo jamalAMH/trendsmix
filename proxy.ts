@@ -1,14 +1,27 @@
 import { updateSession } from "@/lib/supabase/middleware";
+import { shouldBlockAfricanVisitor } from "@/lib/geo";
 import { NextResponse, type NextRequest } from "next/server";
 
-async function isMaintenanceMode(): Promise<boolean> {
+interface PublicSiteSettings {
+  maintenanceMode: boolean;
+  geoBlockAfrica: boolean;
+  geoAllowedIps: string;
+}
+
+async function getPublicSiteSettings(): Promise<PublicSiteSettings> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return false;
+  if (!url || !key) {
+    return {
+      maintenanceMode: false,
+      geoBlockAfrica: false,
+      geoAllowedIps: "",
+    };
+  }
 
   try {
     const res = await fetch(
-      `${url}/rest/v1/settings?key=eq.maintenance_mode&select=value`,
+      `${url}/rest/v1/settings?key=in.(maintenance_mode,geo_block_africa,geo_allowed_ips)&select=key,value`,
       {
         headers: {
           apikey: key,
@@ -16,11 +29,31 @@ async function isMaintenanceMode(): Promise<boolean> {
         },
       },
     );
-    if (!res.ok) return false;
-    const data = (await res.json()) as Array<{ value: string }>;
-    return data[0]?.value === "true";
+    if (!res.ok) {
+      return {
+        maintenanceMode: false,
+        geoBlockAfrica: false,
+        geoAllowedIps: "",
+      };
+    }
+
+    const data = (await res.json()) as Array<{ key: string; value: string }>;
+    const map: Record<string, string> = {};
+    for (const row of data) {
+      map[row.key] = row.value;
+    }
+
+    return {
+      maintenanceMode: map.maintenance_mode === "true",
+      geoBlockAfrica: map.geo_block_africa !== "false",
+      geoAllowedIps: map.geo_allowed_ips ?? "",
+    };
   } catch {
-    return false;
+    return {
+      maintenanceMode: false,
+      geoBlockAfrica: false,
+      geoAllowedIps: "",
+    };
   }
 }
 
@@ -34,12 +67,27 @@ export async function proxy(request: NextRequest) {
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname === "/maintenance"
+    pathname === "/maintenance" ||
+    pathname === "/geo-blocked"
   ) {
     return NextResponse.next({ request });
   }
 
-  if (await isMaintenanceMode()) {
+  const settings = await getPublicSiteSettings();
+
+  if (
+    shouldBlockAfricanVisitor(
+      request,
+      settings.geoBlockAfrica,
+      settings.geoAllowedIps,
+    )
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/geo-blocked";
+    return NextResponse.rewrite(url);
+  }
+
+  if (settings.maintenanceMode) {
     const url = request.nextUrl.clone();
     url.pathname = "/maintenance";
     return NextResponse.rewrite(url);
