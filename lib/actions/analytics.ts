@@ -13,12 +13,8 @@ export interface DailyTraffic {
 }
 
 export interface AnalyticsSummary {
-  todayViews: number;
-  weekViews: number;
   monthViews: number;
-  todayVisitors: number;
-  weekVisitors: number;
-  dailyViews: Array<{ date: string; views: number }>;
+  monthVisitors: number;
   dailyTraffic: DailyTraffic[];
 }
 
@@ -80,15 +76,6 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
   if (error) throw new Error(error.message);
 
   const views = rows ?? [];
-  const now = new Date();
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const weekStart = new Date(startOfDaysAgo(7));
-
-  const todayRows = views.filter(
-    (v) => new Date(v.created_at) >= todayStart,
-  );
-  const weekRows = views.filter((v) => new Date(v.created_at) >= weekStart);
 
   const dailyDates: string[] = [];
   for (let i = 29; i >= 0; i--) {
@@ -130,12 +117,8 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
   });
 
   return {
-    todayViews: todayRows.length,
-    weekViews: weekRows.length,
     monthViews: views.length,
-    todayVisitors: countUniqueSessions(todayRows),
-    weekVisitors: countUniqueSessions(weekRows),
-    dailyViews: dailyTraffic.slice(-7).map((d) => ({ date: d.date, views: d.views })),
+    monthVisitors: countUniqueSessions(views),
     dailyTraffic: [...dailyTraffic].reverse(),
   };
 }

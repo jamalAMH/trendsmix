@@ -14,6 +14,12 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function yesterdayIso(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
 function BarRow({
   label,
   value,
@@ -74,7 +80,7 @@ function DayTrafficDetail({ day }: { day: DailyTraffic }) {
     <div className="grid gap-6 lg:grid-cols-3">
       <div>
         <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Mnin jay trafik
+          Traffic Sources
         </h3>
         <div className="space-y-3">
           {day.sources.map((item) => (
@@ -89,7 +95,7 @@ function DayTrafficDetail({ day }: { day: DailyTraffic }) {
       </div>
       <div>
         <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Blads
+          Countries
         </h3>
         <div className="space-y-3">
           {day.countries.map((item) => (
@@ -210,10 +216,6 @@ export default function AnalyticsPage() {
       pages: [],
     };
 
-  const minDate = data.dailyTraffic.at(-1)?.date ?? selectedDate;
-  const maxDate = data.dailyTraffic[0]?.date ?? selectedDate;
-  const maxDaily = Math.max(...data.dailyViews.map((d) => d.views), 1);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -233,9 +235,9 @@ export default function AnalyticsPage() {
       <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-5">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-sm font-semibold text-white">Choisir nhar</h2>
+            <h2 className="text-sm font-semibold text-white">Select Day</h2>
             <p className="mt-1 text-xs text-zinc-500">
-              Khayar nhar bach tchouf analytics dyalo
+              Choose a day to view its analytics
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -252,23 +254,26 @@ export default function AnalyticsPage() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                const d = new Date();
-                d.setDate(d.getDate() - 1);
-                setSelectedDate(d.toISOString().slice(0, 10));
-              }}
-              className="rounded-lg border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+              onClick={() => setSelectedDate(yesterdayIso())}
+              className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                selectedDate === yesterdayIso()
+                  ? "bg-orange-500 text-white"
+                  : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              }`}
             >
               Yesterday
             </button>
-            <input
-              type="date"
+            <select
               value={selectedDate}
-              min={minDate}
-              max={maxDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-white"
-            />
+            >
+              {data.dailyTraffic.map((day) => (
+                <option key={day.date} value={day.date}>
+                  {formatDayLabel(day.date)} — {day.views} views
+                </option>
+              ))}
+            </select>
           </div>
         </div>
         <p className="mt-3 text-sm text-orange-300">
@@ -289,7 +294,7 @@ export default function AnalyticsPage() {
                 {live.count} Live {live.count === 1 ? "Visitor" : "Visitors"}
               </h2>
               <p className="text-xs text-zinc-500">
-                Nas li online daba — updated every 10s
+                Online right now — updates every 10s
               </p>
             </div>
           </div>
@@ -338,49 +343,15 @@ export default function AnalyticsPage() {
           sub="Unique sessions"
         />
         <StatsCard
-          label="Views (7 days)"
-          value={data.weekViews}
-          sub="Last week total"
-        />
-        <StatsCard
           label="Views (30 days)"
           value={data.monthViews}
           sub="Last month total"
         />
-      </div>
-
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="mb-1 text-sm font-semibold text-white">Last 7 Days</h2>
-        <p className="mb-4 text-xs text-zinc-500">Click a day to view its analytics</p>
-        <div className="grid gap-3 sm:grid-cols-7">
-          {data.dailyViews.map((day) => (
-            <button
-              key={day.date}
-              type="button"
-              onClick={() => setSelectedDate(day.date)}
-              className={`rounded-lg p-2 text-center transition-colors ${
-                selectedDate === day.date
-                  ? "bg-orange-500/10 ring-1 ring-orange-500/40"
-                  : "hover:bg-zinc-800/50"
-              }`}
-            >
-              <div className="mx-auto flex h-24 w-full max-w-[48px] items-end justify-center rounded-lg bg-zinc-950/50 px-1">
-                <div
-                  className="w-full rounded-t bg-orange-500/80"
-                  style={{
-                    height: `${Math.max(8, Math.round((day.views / maxDaily) * 100))}%`,
-                  }}
-                />
-              </div>
-              <p className="mt-2 text-xs font-medium text-white">{day.views}</p>
-              <p className="text-[10px] text-zinc-500">
-                {new Date(day.date + "T12:00:00").toLocaleDateString(undefined, {
-                  weekday: "short",
-                })}
-              </p>
-            </button>
-          ))}
-        </div>
+        <StatsCard
+          label="Visitors (30 days)"
+          value={data.monthVisitors}
+          sub="Last month total"
+        />
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
