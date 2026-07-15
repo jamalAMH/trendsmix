@@ -1,21 +1,12 @@
 "use server";
 
 import { requireAdmin } from "./helpers";
-import { formatPathLabel, formatCountryName } from "@/lib/analytics";
-
-export interface DailyTraffic {
-  date: string;
-  views: number;
-  visitors: number;
-  sources: Array<{ source: string; views: number }>;
-  countries: Array<{ country: string; label: string; views: number }>;
-  pages: Array<{ path: string; label: string; views: number }>;
-}
+import type { AnalyticsRecord } from "@/lib/analytics";
 
 export interface AnalyticsSummary {
-  monthViews: number;
-  monthVisitors: number;
-  dailyTraffic: DailyTraffic[];
+  records: AnalyticsRecord[];
+  minDate: string;
+  maxDate: string;
 }
 
 export interface LiveVisitor {
@@ -42,27 +33,6 @@ function startOfDaysAgo(days: number): string {
   return d.toISOString();
 }
 
-function countUniqueSessions(
-  rows: Array<{ session_id: string | null }>,
-): number {
-  const ids = new Set(
-    rows.map((r) => r.session_id).filter((id): id is string => !!id),
-  );
-  return ids.size;
-}
-
-function aggregateCounts<T extends string>(
-  items: T[],
-): Array<{ key: T; count: number }> {
-  const map = new Map<T, number>();
-  for (const item of items) {
-    map.set(item, (map.get(item) ?? 0) + 1);
-  }
-  return [...map.entries()]
-    .map(([key, count]) => ({ key, count }))
-    .sort((a, b) => b.count - a.count);
-}
-
 export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
   const { supabase } = await requireAdmin();
 
@@ -75,56 +45,27 @@ export async function getAnalyticsSummary(): Promise<AnalyticsSummary> {
 
   if (error) throw new Error(error.message);
 
-  const views = rows ?? [];
+  const records: AnalyticsRecord[] = (rows ?? []).map((row) => ({
+    date: (row.created_at as string).slice(0, 10),
+    path: row.path as string,
+    source: row.source as string,
+    country: (row.country as string) || "Unknown",
+    sessionId: (row.session_id as string | null) ?? null,
+  }));
 
-  const dailyDates: string[] = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    dailyDates.push(d.toISOString().slice(0, 10));
-  }
-
-  const dailyTraffic: DailyTraffic[] = dailyDates.map((date) => {
-    const dayRows = views.filter((v) => v.created_at.slice(0, 10) === date);
-    const sources = aggregateCounts(dayRows.map((v) => v.source as string))
-      .slice(0, 8)
-      .map((s) => ({ source: s.key, views: s.count }));
-    const countries = aggregateCounts(
-      dayRows.map((v) => (v.country as string) || "Unknown"),
-    )
-      .slice(0, 8)
-      .map((c) => ({
-        country: c.key,
-        label: formatCountryName(c.key),
-        views: c.count,
-      }));
-    const pages = aggregateCounts(dayRows.map((v) => v.path as string))
-      .slice(0, 8)
-      .map((p) => ({
-        path: p.key,
-        label: formatPathLabel(p.key),
-        views: p.count,
-      }));
-
-    return {
-      date,
-      views: dayRows.length,
-      visitors: countUniqueSessions(dayRows),
-      sources,
-      countries,
-      pages,
-    };
-  });
+  const today = new Date().toISOString().slice(0, 10);
+  const minDate = startOfDaysAgo(29).slice(0, 10);
 
   return {
-    monthViews: views.length,
-    monthVisitors: countUniqueSessions(views),
-    dailyTraffic: [...dailyTraffic].reverse(),
+    records,
+    minDate,
+    maxDate: today,
   };
 }
 
 export async function getLiveVisitors(): Promise<LiveVisitorsResult> {
   const { supabase } = await requireAdmin();
+  const { formatPathLabel, formatCountryName } = await import("@/lib/analytics");
 
   const threshold = new Date(Date.now() - LIVE_WINDOW_MS).toISOString();
   const { data, error } = await supabase

@@ -1,24 +1,29 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import StatsCard from "@/components/admin/StatsCard";
+import {
+  aggregatePeriod,
+  getDateRange,
+  todayIso,
+  type PeriodPreset,
+  type PeriodTraffic,
+} from "@/lib/analytics";
 import {
   getAnalyticsSummary,
   getLiveVisitors,
   type AnalyticsSummary,
-  type DailyTraffic,
   type LiveVisitorsResult,
 } from "@/lib/actions/analytics";
 
-function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function yesterdayIso(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return d.toISOString().slice(0, 10);
-}
+const PERIOD_OPTIONS: Array<{ id: PeriodPreset; label: string }> = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "7d", label: "7 Days" },
+  { id: "15d", label: "15 Days" },
+  { id: "30d", label: "30 Days" },
+  { id: "custom", label: "Custom" },
+];
 
 function BarRow({
   label,
@@ -47,32 +52,14 @@ function BarRow({
   );
 }
 
-function formatDayLabel(date: string): string {
-  const d = new Date(date + "T12:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const day = new Date(d);
-  day.setHours(0, 0, 0, 0);
-  const diff = Math.round((today.getTime() - day.getTime()) / 86400000);
+function PeriodTrafficDetail({ period }: { period: PeriodTraffic }) {
+  const maxSource = period.sources[0]?.views ?? 1;
+  const maxCountry = period.countries[0]?.views ?? 1;
+  const maxPage = period.pages[0]?.views ?? 1;
 
-  if (diff === 0) return "Today";
-  if (diff === 1) return "Yesterday";
-
-  return d.toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-function DayTrafficDetail({ day }: { day: DailyTraffic }) {
-  const maxSource = day.sources[0]?.views ?? 1;
-  const maxCountry = day.countries[0]?.views ?? 1;
-  const maxPage = day.pages[0]?.views ?? 1;
-
-  if (day.views === 0) {
+  if (period.views === 0) {
     return (
-      <p className="text-sm text-zinc-500">No traffic recorded for this day.</p>
+      <p className="text-sm text-zinc-500">No traffic recorded for this period.</p>
     );
   }
 
@@ -83,7 +70,7 @@ function DayTrafficDetail({ day }: { day: DailyTraffic }) {
           Traffic Sources
         </h3>
         <div className="space-y-3">
-          {day.sources.map((item) => (
+          {period.sources.map((item) => (
             <BarRow
               key={item.source}
               label={item.source}
@@ -98,7 +85,7 @@ function DayTrafficDetail({ day }: { day: DailyTraffic }) {
           Countries
         </h3>
         <div className="space-y-3">
-          {day.countries.map((item) => (
+          {period.countries.map((item) => (
             <BarRow
               key={item.country}
               label={item.label}
@@ -113,7 +100,7 @@ function DayTrafficDetail({ day }: { day: DailyTraffic }) {
           Top Pages
         </h3>
         <div className="space-y-3">
-          {day.pages.map((item) => (
+          {period.pages.map((item) => (
             <BarRow
               key={item.path}
               label={item.label}
@@ -137,10 +124,18 @@ function timeAgo(iso: string): string {
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsSummary | null>(null);
   const [live, setLive] = useState<LiveVisitorsResult>({ count: 0, visitors: [] });
-  const [selectedDate, setSelectedDate] = useState(todayIso());
+  const [preset, setPreset] = useState<PeriodPreset>("today");
+  const [customStart, setCustomStart] = useState(todayIso());
+  const [customEnd, setCustomEnd] = useState(todayIso());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pending, startTransition] = useTransition();
+
+  const period = useMemo(() => {
+    if (!data) return null;
+    const range = getDateRange(preset, customStart, customEnd);
+    return aggregatePeriod(data.records, range.start, range.end);
+  }, [data, preset, customStart, customEnd]);
 
   function load() {
     setError(null);
@@ -172,9 +167,9 @@ export default function AnalyticsPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-14 animate-pulse rounded-xl border border-zinc-800 bg-zinc-900/50" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="h-20 animate-pulse rounded-xl border border-zinc-800 bg-zinc-900/50" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
             <div
               key={i}
               className="h-28 animate-pulse rounded-xl border border-zinc-800 bg-zinc-900/50"
@@ -204,17 +199,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  if (!data) return null;
-
-  const selectedDay =
-    data.dailyTraffic.find((d) => d.date === selectedDate) ?? {
-      date: selectedDate,
-      views: 0,
-      visitors: 0,
-      sources: [],
-      countries: [],
-      pages: [],
-    };
+  if (!data || !period) return null;
 
   return (
     <div className="space-y-6">
@@ -233,52 +218,55 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-5">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Select Day</h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              Choose a day to view its analytics
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedDate(todayIso())}
-              className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                selectedDate === todayIso()
-                  ? "bg-orange-500 text-white"
-                  : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-              }`}
-            >
-              Today
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedDate(yesterdayIso())}
-              className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
-                selectedDate === yesterdayIso()
-                  ? "bg-orange-500 text-white"
-                  : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-              }`}
-            >
-              Yesterday
-            </button>
-            <select
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-white"
-            >
-              {data.dailyTraffic.map((day) => (
-                <option key={day.date} value={day.date}>
-                  {formatDayLabel(day.date)} — {day.views} views
-                </option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <h2 className="text-sm font-semibold text-white">Select Period</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Choose a time range — all stats update automatically
+          </p>
         </div>
-        <p className="mt-3 text-sm text-orange-300">
-          {formatDayLabel(selectedDate)} — {selectedDay.views} views,{" "}
-          {selectedDay.visitors} visitors
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {PERIOD_OPTIONS.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => setPreset(option.id)}
+              className={`rounded-lg px-3 py-1.5 text-xs transition-colors ${
+                preset === option.id
+                  ? "bg-orange-500 text-white"
+                  : "border border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+
+        {preset === "custom" && (
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <label className="text-xs text-zinc-500">From</label>
+            <input
+              type="date"
+              value={customStart}
+              min={data.minDate}
+              max={data.maxDate}
+              onChange={(e) => setCustomStart(e.target.value)}
+              className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-white"
+            />
+            <label className="text-xs text-zinc-500">To</label>
+            <input
+              type="date"
+              value={customEnd}
+              min={data.minDate}
+              max={data.maxDate}
+              onChange={(e) => setCustomEnd(e.target.value)}
+              className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-1.5 text-xs text-white"
+            />
+          </div>
+        )}
+
+        <p className="mt-4 text-sm text-orange-300">
+          {period.label} — {period.views} views, {period.visitors} visitors
         </p>
       </div>
 
@@ -331,36 +319,28 @@ export default function AnalyticsPage() {
         )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <StatsCard
           label="Views"
-          value={selectedDay.views}
-          sub={formatDayLabel(selectedDate)}
+          value={period.views}
+          sub={period.label}
         />
         <StatsCard
           label="Visitors"
-          value={selectedDay.visitors}
+          value={period.visitors}
           sub="Unique sessions"
-        />
-        <StatsCard
-          label="Views (30 days)"
-          value={data.monthViews}
-          sub="Last month total"
-        />
-        <StatsCard
-          label="Visitors (30 days)"
-          value={data.monthVisitors}
-          sub="Last month total"
         />
       </div>
 
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-        <h2 className="text-sm font-semibold text-white">
-          {formatDayLabel(selectedDate)}
-        </h2>
-        <p className="mt-1 text-xs text-zinc-500">{selectedDate}</p>
+        <h2 className="text-sm font-semibold text-white">{period.label}</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          {period.start === period.end
+            ? period.start
+            : `${period.start} to ${period.end}`}
+        </p>
         <div className="mt-5">
-          <DayTrafficDetail day={selectedDay} />
+          <PeriodTrafficDetail period={period} />
         </div>
       </div>
 
