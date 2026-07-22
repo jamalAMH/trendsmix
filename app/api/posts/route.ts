@@ -120,7 +120,7 @@ export async function POST(request: Request) {
         mirrorAuth,
         { strict: false },
       );
-      featuredImage = prepared.featuredImage;
+      featuredImage = prepared.featuredImage ?? rawImage;
       preparedContent = prepared.content;
     } catch (error) {
       return NextResponse.json(
