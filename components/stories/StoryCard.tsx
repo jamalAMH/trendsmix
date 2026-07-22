@@ -24,6 +24,7 @@ export default function StoryCard({ story, priority = false }: StoryCardProps) {
             src={story.featuredImage.src!}
             alt={story.featuredImage.alt || story.title}
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading={priority ? "eager" : "lazy"}
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-orange-950 via-zinc-900 to-zinc-950 transition-transform duration-500 group-hover:scale-105" />

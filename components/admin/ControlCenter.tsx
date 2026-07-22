@@ -12,6 +12,7 @@ import {
   revalidateSite,
   updateControlSettings,
 } from "@/lib/actions/control";
+import { fixBrokenPostImages } from "@/lib/actions/images";
 import type { Setting } from "@/types/database";
 
 interface ControlStats {
@@ -29,6 +30,7 @@ interface SystemStatus {
   supabaseConfigured: boolean;
   siteUrl: string;
   n8nEnvConfigured: boolean;
+  imageStorageConfigured: boolean;
   visitorIp: string;
   visitorCountry: string;
 }
@@ -452,6 +454,21 @@ export default function ControlCenter({
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-3">
             <button
               type="button"
+              disabled={pending || !isAdmin}
+              onClick={() =>
+                runAction(
+                  "Broken images replaced with hosted photos.",
+                  fixBrokenPostImages,
+                  "Replace all broken Facebook image links with permanent hosted images? This may take a few minutes.",
+                )
+              }
+              className="w-full rounded-lg border border-orange-500/20 bg-orange-500/10 px-4 py-2.5 text-left text-sm text-orange-400 transition-colors hover:bg-orange-500/20 disabled:opacity-40"
+            >
+              Fix broken post images
+            </button>
+
+            <button
+              type="button"
               disabled={pending || !isAdmin || stats.drafts === 0}
               onClick={() =>
                 runAction(
@@ -557,6 +574,15 @@ export default function ControlCenter({
               settings.geo_block_africa
                 ? "Africa blocked — whitelist your IP"
                 : "Africa access allowed"
+            }
+          />
+          <StatusItem
+            label="Image Storage (Supabase)"
+            ok={systemStatus.imageStorageConfigured}
+            detail={
+              systemStatus.imageStorageConfigured
+                ? "External images saved permanently"
+                : "Deploy mirror-image function on Supabase"
             }
           />
           <StatusItem

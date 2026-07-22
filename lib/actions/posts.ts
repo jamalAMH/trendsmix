@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { hasExternalImages } from "@/lib/prepare-post-images";
+import { getAdminMirrorAuth } from "@/lib/actions/mirror-auth";
+import { persistPostImages } from "@/lib/post-images";
 import { requireAdmin } from "./helpers";
 
 export async function createPost(formData: FormData) {
@@ -22,24 +25,41 @@ export async function createPost(formData: FormData) {
   const canonicalUrl = formData.get("canonical_url") as string;
   const ogImage = formData.get("og_image") as string;
 
+  let finalFeaturedImage = featuredImage || null;
+  let finalContent = content;
+  let finalOgImage = ogImage || null;
+
+  if (hasExternalImages(featuredImage, content, [ogImage])) {
+    const auth = await getAdminMirrorAuth();
+    const prepared = await persistPostImages(
+      featuredImage,
+      content,
+      [ogImage],
+      auth,
+    );
+    finalFeaturedImage = prepared.featuredImage;
+    finalContent = prepared.content;
+    finalOgImage = prepared.extras[0] ?? null;
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .insert({
       title,
       slug,
       excerpt,
-      content,
+      content: finalContent,
       category_id: categoryId || null,
       author_id: userId,
       status,
       featured,
       read_time: readTime,
-      featured_image: featuredImage || null,
+      featured_image: finalFeaturedImage,
       featured_image_alt: featuredImageAlt,
       meta_title: metaTitle || null,
       meta_description: metaDescription || null,
       canonical_url: canonicalUrl || null,
-      og_image: ogImage || null,
+      og_image: finalOgImage,
       published_at: status === "published" ? new Date().toISOString() : null,
     })
     .select()
@@ -71,6 +91,23 @@ export async function updatePost(id: string, formData: FormData) {
   const canonicalUrl = formData.get("canonical_url") as string;
   const ogImage = formData.get("og_image") as string;
 
+  let finalFeaturedImage = featuredImage || null;
+  let finalContent = content;
+  let finalOgImage = ogImage || null;
+
+  if (hasExternalImages(featuredImage, content, [ogImage])) {
+    const auth = await getAdminMirrorAuth();
+    const prepared = await persistPostImages(
+      featuredImage,
+      content,
+      [ogImage],
+      auth,
+    );
+    finalFeaturedImage = prepared.featuredImage;
+    finalContent = prepared.content;
+    finalOgImage = prepared.extras[0] ?? null;
+  }
+
   const { data: existing } = await supabase
     .from("posts")
     .select("published_at, status")
@@ -88,17 +125,17 @@ export async function updatePost(id: string, formData: FormData) {
       title,
       slug,
       excerpt,
-      content,
+      content: finalContent,
       category_id: categoryId || null,
       status,
       featured,
       read_time: readTime,
-      featured_image: featuredImage || null,
+      featured_image: finalFeaturedImage,
       featured_image_alt: featuredImageAlt,
       meta_title: metaTitle || null,
       meta_description: metaDescription || null,
       canonical_url: canonicalUrl || null,
-      og_image: ogImage || null,
+      og_image: finalOgImage,
       published_at: publishedAt,
     })
     .eq("id", id);

@@ -1,6 +1,11 @@
-import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
+import { hasExternalImages } from "@/lib/prepare-post-images";
+import {
+  isImageStorageConfigured,
+  persistPostImages,
+} from "@/lib/post-images";
+import { revalidateStoryPaths } from "@/lib/revalidate-stories";
 import { isN8nEnabled } from "@/lib/settings";
 import { createClient } from "@supabase/supabase-js";
 
@@ -94,22 +99,68 @@ export async function POST(request: Request) {
     );
   }
 
+  const rawImage = body.image?.trim() || body["url image"]?.trim() || null;
   const content = cleanContent(body.article_content);
-  const excerpt = generateExcerpt(content);
-  const readTime = calculateReadTime(content);
+
+  if (hasExternalImages(rawImage, content) && !isImageStorageConfigured()) {
+    return NextResponse.json(
+      {
+        error:
+          "Image storage is not configured. Deploy the mirror-image Supabase function or add SUPABASE_SERVICE_ROLE_KEY.",
+      },
+      { status: 503 },
+    );
+  }
+
+  let featuredImage = rawImage;
+  let preparedContent = content;
+
+  if (isImageStorageConfigured()) {
+    try {
+      const apiKeyHeader = request.headers.get("x-api-key");
+      const authHeader = request.headers.get("authorization");
+      const providedKey =
+        apiKeyHeader ??
+        (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null);
+      const mirrorAuth = providedKey
+        ? ({ type: "api-key" as const, key: providedKey })
+        : null;
+      const prepared = await persistPostImages(
+        rawImage,
+        content,
+        [],
+        mirrorAuth,
+      );
+      featuredImage = prepared.featuredImage;
+      preparedContent = prepared.content;
+    } catch (error) {
+      return NextResponse.json(
+        {
+          error:
+            error instanceof Error
+              ? error.message
+              : "Failed to save images to storage.",
+        },
+        { status: 502 },
+      );
+    }
+  }
+
+  const excerpt = generateExcerpt(preparedContent);
+  const readTime = calculateReadTime(preparedContent);
 
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("publish_post_n8n", {
     p_api_key: apiKey,
     p_title: body.title.trim(),
-    p_content: content,
+    p_content: preparedContent,
     p_slug: null,
     p_excerpt: excerpt,
     p_category_slug: null,
     p_status: "published",
     p_featured: false,
     p_read_time: readTime,
-    p_featured_image: body.image?.trim() || body["url image"]?.trim() || null,
+    p_featured_image: featuredImage,
     p_featured_image_alt: "",
     p_meta_title: null,
     p_meta_description: null,
@@ -136,11 +187,7 @@ export async function POST(request: Request) {
     published_at: string | null;
   };
 
-  revalidatePath("/");
-  revalidatePath("/stories");
-  revalidatePath(`/stories/${post.slug}`);
-  revalidatePath("/sitemap.xml");
-  revalidatePath("/feed.xml");
+  revalidateStoryPaths(post.slug);
 
   return NextResponse.json(
     { ok: true, post, url: `/stories/${post.slug}` },

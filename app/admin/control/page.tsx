@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import ControlCenter from "@/components/admin/ControlCenter";
 import { getGeoFromHeaders, formatCountryName } from "@/lib/analytics";
 import { getClientIpFromHeaders } from "@/lib/geo";
+import { isImageStorageConfigured } from "@/lib/post-images";
 import { headers } from "next/headers";
 
 export default async function ControlPage() {
@@ -28,6 +29,7 @@ export default async function ControlPage() {
     ),
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
     n8nEnvConfigured: !!process.env.N8N_API_KEY,
+    imageStorageConfigured: isImageStorageConfigured(),
     visitorIp: getClientIpFromHeaders(h),
     visitorCountry: formatCountryName(country),
   };
