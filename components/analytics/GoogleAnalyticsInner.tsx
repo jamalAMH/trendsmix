@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 declare global {
@@ -11,8 +11,12 @@ declare global {
   }
 }
 
-function sendPageView(url: string, measurementId: string) {
-  window.gtag?.("config", measurementId, { page_path: url });
+function pagePath(
+  pathname: string,
+  searchParams: URLSearchParams | null,
+): string {
+  const query = searchParams?.toString();
+  return query ? `${pathname}?${query}` : pathname;
 }
 
 export default function GoogleAnalyticsInner({
@@ -22,13 +26,18 @@ export default function GoogleAnalyticsInner({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isFirstView = useRef(true);
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/admin")) return;
 
-    const query = searchParams?.toString();
-    const url = query ? `${pathname}?${query}` : pathname;
-    sendPageView(url, measurementId);
+    if (isFirstView.current) {
+      isFirstView.current = false;
+      return;
+    }
+
+    const url = pagePath(pathname, searchParams);
+    window.gtag?.("config", measurementId, { page_path: url });
   }, [pathname, searchParams, measurementId]);
 
   return (
@@ -42,7 +51,7 @@ export default function GoogleAnalyticsInner({
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${measurementId}', { send_page_view: false });
+          gtag('config', '${measurementId}');
         `}
       </Script>
     </>
