@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { isAiRewriteConfigured } from "@/lib/ai-rewrite";
-import { optimizePost } from "@/lib/post-optimizer";
+import { optimizePost, optimizePostFree } from "@/lib/post-optimizer";
 import { requireAdmin } from "./helpers";
 
 export type OptimizePostsResult =
@@ -47,12 +47,17 @@ export async function optimizePostsBatch(
 
     for (const post of posts ?? []) {
       try {
-        const optimized = await optimizePost(
-          post.title as string,
-          post.content as string,
-          (post.excerpt as string) ?? "",
-          useAi,
-        );
+        const optimized = useAi
+          ? await optimizePost(
+              post.title as string,
+              post.content as string,
+              (post.excerpt as string) ?? "",
+              true,
+            )
+          : optimizePostFree(
+              post.title as string,
+              post.content as string,
+            );
 
         const { error: updateError } = await supabase
           .from("posts")

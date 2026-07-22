@@ -260,7 +260,7 @@ export default function ControlCenter({
     }
 
     const aiNote =
-      "With OPENAI_API_KEY: full AI rewrite (~$2-5 for 210 posts).\nWithout: cleanup + structure only.\n\nContinue?";
+      "Free cleanup only: removes scrape noise, adds structure and SEO meta.\nOld posts only — new n8n posts are optimized automatically.\n\nContinue?";
     if (!confirm(aiNote)) return;
 
     startTransition(async () => {
@@ -272,7 +272,7 @@ export default function ControlCenter({
       let updatedTotal = 0;
 
       while (true) {
-        const result = await optimizePostsBatch(offset, 3, true);
+        const result = await optimizePostsBatch(offset, 5, false);
         if (!result.ok) {
           showError(result.error);
           setOptimizeProgress(null);
@@ -507,8 +507,8 @@ export default function ControlCenter({
               className="w-full rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5 text-left text-sm text-emerald-400 transition-colors hover:bg-emerald-500/20 disabled:opacity-40"
             >
               {optimizeProgress
-                ? `Optimizing posts… ${optimizeProgress}`
-                : "Optimize all posts (AdSense-ready)"}
+                ? `Cleaning posts… ${optimizeProgress}`
+                : "Clean up old posts (free, optional)"}
             </button>
 
             <button

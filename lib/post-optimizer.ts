@@ -18,6 +18,23 @@ export interface OptimizedPost {
   aiRewritten: boolean;
 }
 
+export function optimizePostFree(
+  title: string,
+  content: string,
+): OptimizedPost {
+  const cleaned = optimizePostContent(title, content);
+  const finalExcerpt = generateExcerpt(cleaned);
+  return {
+    title: title.trim(),
+    excerpt: finalExcerpt,
+    content: cleaned,
+    meta_title: buildMetaTitle(title),
+    meta_description: buildMetaDescription(cleaned, title),
+    read_time: calculateReadTime(cleaned),
+    aiRewritten: false,
+  };
+}
+
 export async function optimizePost(
   title: string,
   content: string,

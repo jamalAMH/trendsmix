@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
-import {
-  cleanScrapedContent,
-  calculateReadTime,
-  generateExcerpt,
-} from "@/lib/content-cleanup";
 import { hasExternalImages } from "@/lib/prepare-post-images";
+import { optimizePostFree } from "@/lib/post-optimizer";
 import {
   isImageStorageConfigured,
   persistPostImages,
@@ -19,10 +15,6 @@ interface CreatePostBody {
   article_content: string;
   image?: string;
   "url image"?: string;
-}
-
-function cleanContent(html: string): string {
-  return cleanScrapedContent(html);
 }
 
 function getSupabase() {
@@ -72,9 +64,10 @@ export async function POST(request: Request) {
   }
 
   const rawImage = body.image?.trim() || body["url image"]?.trim() || null;
-  const content = cleanContent(body.article_content);
+  const title = body.title.trim();
+  let preparedContent = body.article_content;
 
-  if (hasExternalImages(rawImage, content) && !isImageStorageConfigured()) {
+  if (hasExternalImages(rawImage, preparedContent) && !isImageStorageConfigured()) {
     return NextResponse.json(
       {
         error:
@@ -85,7 +78,6 @@ export async function POST(request: Request) {
   }
 
   let featuredImage = rawImage;
-  let preparedContent = content;
 
   if (isImageStorageConfigured()) {
     try {
@@ -99,7 +91,7 @@ export async function POST(request: Request) {
         : null;
       const prepared = await persistPostImages(
         rawImage,
-        content,
+        preparedContent,
         [],
         mirrorAuth,
       );
@@ -118,24 +110,23 @@ export async function POST(request: Request) {
     }
   }
 
-  const excerpt = generateExcerpt(preparedContent);
-  const readTime = calculateReadTime(preparedContent);
+  const optimized = optimizePostFree(title, preparedContent);
 
   const supabase = getSupabase();
   const { data, error } = await supabase.rpc("publish_post_n8n", {
     p_api_key: apiKey,
-    p_title: body.title.trim(),
-    p_content: preparedContent,
+    p_title: optimized.title,
+    p_content: optimized.content,
     p_slug: null,
-    p_excerpt: excerpt,
+    p_excerpt: optimized.excerpt,
     p_category_slug: null,
     p_status: "published",
     p_featured: false,
-    p_read_time: readTime,
+    p_read_time: optimized.read_time,
     p_featured_image: featuredImage,
     p_featured_image_alt: "",
-    p_meta_title: null,
-    p_meta_description: null,
+    p_meta_title: optimized.meta_title,
+    p_meta_description: optimized.meta_description,
     p_canonical_url: null,
     p_og_image: null,
   });
