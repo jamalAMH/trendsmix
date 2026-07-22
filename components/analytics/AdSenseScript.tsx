@@ -1,4 +1,3 @@
-import Script from "next/script";
 import { getSetting } from "@/lib/settings";
 
 export default async function AdSenseScript() {
@@ -10,12 +9,10 @@ export default async function AdSenseScript() {
     : `ca-${clientId}`;
 
   return (
-    <Script
-      id="google-adsense"
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedClientId}`}
-      strategy="beforeInteractive"
-      crossOrigin="anonymous"
+    <script
       async
+      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedClientId}`}
+      crossOrigin="anonymous"
     />
   );
 }
