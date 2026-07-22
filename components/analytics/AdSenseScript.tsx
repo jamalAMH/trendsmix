@@ -13,8 +13,9 @@ export default async function AdSenseScript() {
     <Script
       id="google-adsense"
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedClientId}`}
-      strategy="afterInteractive"
+      strategy="beforeInteractive"
       crossOrigin="anonymous"
+      async
     />
   );
 }
