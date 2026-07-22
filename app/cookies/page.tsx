@@ -75,6 +75,19 @@ export default function CookiePolicyPage() {
           experience. The information they collect is anonymised and cannot track
           browsing activity on other websites.
         </p>
+
+        <h3 className="mt-5 text-base font-semibold text-zinc-200">
+          2.4 Advertising Cookies
+        </h3>
+        <p className="mt-3">
+          We display advertising served by third-party partners, including Google
+          AdSense and Mediavine (Journey by Mediavine). These partners and their
+          vendors may set cookies and use similar technologies to show ads,
+          measure ad performance, and, where you have consented, personalise the
+          ads you see based on your browsing activity. Where required by law, a
+          consent management notice lets you accept, manage, or reject these
+          cookies.
+        </p>
       </section>
 
       <section aria-labelledby="cookies-third-party">
@@ -96,6 +109,11 @@ export default function CookiePolicyPage() {
             <strong className="text-zinc-200">Hosting provider analytics</strong>{" "}
             — server-level performance metrics provided by our hosting
             infrastructure.
+          </li>
+          <li>
+            <strong className="text-zinc-200">Google AdSense &amp; Mediavine</strong>{" "}
+            — advertising partners that serve ads and, with your consent, may
+            personalise them and measure their performance.
           </li>
         </ul>
       </section>

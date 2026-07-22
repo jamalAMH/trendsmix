@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
+import { fetchImageUrlFromPage } from "@/lib/extract-page-image";
 import { hasExternalImages } from "@/lib/prepare-post-images";
 import { optimizePostFree } from "@/lib/post-optimizer";
 import {
   isImageStorageConfigured,
   persistPostImages,
 } from "@/lib/post-images";
+import { placeholderImageUrl } from "@/lib/placeholder-image";
 import { revalidateStoryPaths } from "@/lib/revalidate-stories";
 import { isN8nEnabled } from "@/lib/settings";
 import { createClient } from "@supabase/supabase-js";
@@ -14,7 +16,21 @@ interface CreatePostBody {
   title: string;
   article_content: string;
   image?: string;
+  post_image?: string;
+  url?: string;
   "url image"?: string;
+  comment_links?: string;
+  page_url?: string;
+}
+
+function resolveN8nImage(body: CreatePostBody): string | null {
+  return (
+    body.image?.trim() ||
+    body.post_image?.trim() ||
+    body.url?.trim() ||
+    body["url image"]?.trim() ||
+    null
+  );
 }
 
 function getSupabase() {
@@ -63,9 +79,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const rawImage = body.image?.trim() || body["url image"]?.trim() || null;
   const title = body.title.trim();
   let preparedContent = body.article_content;
+  const pageUrl = body.comment_links?.trim() || body.page_url?.trim() || null;
+
+  let rawImage = resolveN8nImage(body);
+  if (!rawImage && pageUrl) {
+    rawImage = await fetchImageUrlFromPage(pageUrl);
+  }
+  if (!rawImage) {
+    rawImage = placeholderImageUrl(title);
+  }
 
   if (hasExternalImages(rawImage, preparedContent) && !isImageStorageConfigured()) {
     return NextResponse.json(
@@ -94,6 +118,7 @@ export async function POST(request: Request) {
         preparedContent,
         [],
         mirrorAuth,
+        { strict: false },
       );
       featuredImage = prepared.featuredImage;
       preparedContent = prepared.content;

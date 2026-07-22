@@ -6,7 +6,10 @@ import {
   defaultMirrorAuth,
   isEdgeMirrorAvailable,
 } from "@/lib/image-mirror-edge";
-import { preparePostImages } from "@/lib/prepare-post-images";
+import {
+  preparePostImages,
+  type PreparePostImagesOptions,
+} from "@/lib/prepare-post-images";
 import type { MirrorAuth } from "@/lib/image-mirror-edge";
 import { createServiceClient } from "@/lib/supabase/service";
 
@@ -31,6 +34,7 @@ export async function persistPostImages(
   content: string,
   extraUrls: Array<string | null | undefined> = [],
   auth?: MirrorAuth | null,
+  options?: PreparePostImagesOptions,
 ): Promise<{
   featuredImage: string | null;
   content: string;
@@ -43,5 +47,11 @@ export async function persistPostImages(
     );
   }
 
-  return preparePostImages(backend, featuredImage, content, extraUrls);
+  return preparePostImages(
+    backend,
+    featuredImage,
+    content,
+    extraUrls,
+    options,
+  );
 }

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ContactForm from "@/components/contact/ContactForm";
 import { SITE_NAME } from "@/lib/constants";
+import { getSetting } from "@/lib/settings";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = createPageMetadata({
@@ -10,7 +12,10 @@ export const metadata: Metadata = createPageMetadata({
   path: "/contact",
 });
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const contactEmail =
+    (await getSetting("contact_email")) || "contact@trendsmix.online";
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <header>
@@ -21,128 +26,9 @@ export default function ContactPage() {
         >
           Contact Us
         </h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-          Whether you have a question about our platform, want to discuss a
-          partnership, or need to report an issue — we are here to help. Fill out
-          the form below and our team will respond within two business days.
-        </p>
       </header>
 
-      <form
-        className="mt-10 space-y-6"
-        aria-labelledby="contact-heading"
-      >
-        <div className="grid gap-6 sm:grid-cols-2">
-          <div>
-            <label
-              htmlFor="first-name"
-              className="block text-sm font-medium text-zinc-300"
-            >
-              First Name
-            </label>
-            <input
-              id="first-name"
-              name="first-name"
-              type="text"
-              autoComplete="given-name"
-              required
-              aria-required="true"
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-              placeholder="Jane"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="last-name"
-              className="block text-sm font-medium text-zinc-300"
-            >
-              Last Name
-            </label>
-            <input
-              id="last-name"
-              name="last-name"
-              type="text"
-              autoComplete="family-name"
-              required
-              aria-required="true"
-              className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-              placeholder="Doe"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-zinc-300"
-          >
-            Email Address
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            aria-required="true"
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            placeholder="jane@example.com"
-          />
-        </div>
-
-        <div>
-          <label
-            htmlFor="subject"
-            className="block text-sm font-medium text-zinc-300"
-          >
-            Subject
-          </label>
-          <select
-            id="subject"
-            name="subject"
-            required
-            aria-required="true"
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            defaultValue=""
-          >
-            <option value="" disabled>
-              Select a topic
-            </option>
-            <option value="general">General Enquiry</option>
-            <option value="partnership">Partnership &amp; Advertising</option>
-            <option value="submission">Story Submission</option>
-            <option value="press">Press &amp; Media</option>
-            <option value="bug">Bug Report</option>
-            <option value="dmca">DMCA / Copyright</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="message"
-            className="block text-sm font-medium text-zinc-300"
-          >
-            Message
-          </label>
-          <textarea
-            id="message"
-            name="message"
-            rows={6}
-            required
-            aria-required="true"
-            className="mt-2 w-full rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            placeholder="Please provide as much detail as possible..."
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full rounded-xl bg-orange-500 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-400 hover:shadow-orange-500/30 sm:w-auto"
-        >
-          Send Message
-        </button>
-      </form>
+      <ContactForm email={contactEmail} />
 
       <div className="mt-14 grid gap-8 border-t border-zinc-800/80 pt-10 sm:grid-cols-2">
         <section aria-labelledby="contact-response-heading">

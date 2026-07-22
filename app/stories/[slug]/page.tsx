@@ -6,6 +6,7 @@ import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
 import JsonLd from "@/components/seo/JsonLd";
 import ReadingProgress from "@/components/stories/ReadingProgress";
 import ShareButtons from "@/components/stories/ShareButtons";
+import ArticleAd from "@/components/analytics/ArticleAd";
 import StoryNavigation from "@/components/stories/StoryNavigation";
 import RelatedStories from "@/components/stories/RelatedStories";
 import {
@@ -160,12 +161,16 @@ export default async function StoryDetailsPage({
         <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
           <ShareButtons />
 
+          <ArticleAd className="mt-10" />
+
           <div
             className="article-body mt-10 text-base leading-[1.85] text-zinc-300 sm:text-lg"
             itemProp="articleBody"
           >
             <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(story.content) }} />
           </div>
+
+          <ArticleAd className="mt-12" />
 
           <footer className="mt-12 border-t border-zinc-800/80 pt-10">
             <address

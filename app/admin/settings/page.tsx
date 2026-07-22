@@ -8,13 +8,15 @@ import type { Setting } from "@/types/database";
 const FIELDS: Array<{ key: string; label: string; type?: string; group: string }> = [
   { key: "site_name", label: "Site Name", group: "General" },
   { key: "site_description", label: "Site Description", group: "General" },
+  { key: "contact_email", label: "Contact Email", type: "email", group: "General" },
   { key: "logo_url", label: "Logo URL", type: "url", group: "General" },
   { key: "favicon_url", label: "Favicon URL", type: "url", group: "General" },
   { key: "twitter_url", label: "Twitter / X URL", type: "url", group: "Social Links" },
   { key: "instagram_url", label: "Instagram URL", type: "url", group: "Social Links" },
   { key: "facebook_url", label: "Facebook URL", type: "url", group: "Social Links" },
-  { key: "adsense_client_id", label: "AdSense Client ID", group: "Monetization & Analytics" },
-  { key: "adsense_slot_id", label: "AdSense Slot ID", group: "Monetization & Analytics" },
+  { key: "adsense_client_id", label: "AdSense Client ID (ok before approval)", group: "Monetization & Analytics" },
+  { key: "adsense_slot_id", label: "AdSense Slot ID (add after approval)", group: "Monetization & Analytics" },
+  { key: "grow_id", label: "Grow by Mediavine Site ID (for Journey)", group: "Monetization & Analytics" },
   { key: "analytics_id", label: "Google Analytics ID (GA4)", group: "Monetization & Analytics" },
   { key: "google_site_verification", label: "Google Search Console Verification Code", group: "Monetization & Analytics" },
 ];
@@ -100,7 +102,15 @@ export default function SettingsPage() {
                     ? "G-XXXXXXXXXX"
                     : field.key === "google_site_verification"
                       ? "google-site-verification=..."
-                      : undefined
+                      : field.key === "adsense_client_id"
+                        ? "ca-pub-XXXXXXXXXXXXXXXX"
+                        : field.key === "adsense_slot_id"
+                          ? "1234567890"
+                          : field.key === "contact_email"
+                            ? "contact@trendsmix.online"
+                            : field.key === "grow_id"
+                              ? "u-XXXXXXXXXXXXXXXXXXXX"
+                              : undefined
                 }
                 className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-orange-500"
               />

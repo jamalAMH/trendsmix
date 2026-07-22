@@ -1,6 +1,6 @@
 import { stripHtml } from "@/lib/content-cleanup";
 
-const REWRITE_MODEL = "gpt-4o-mini";
+const REWRITE_MODEL = "gpt-4o";
 
 export function isAiRewriteConfigured(): boolean {
   return !!process.env.OPENAI_API_KEY?.trim();

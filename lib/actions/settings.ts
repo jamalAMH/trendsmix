@@ -12,8 +12,10 @@ const ALLOWED_KEYS = new Set([
   "twitter_url",
   "instagram_url",
   "facebook_url",
+  "contact_email",
   "adsense_client_id",
   "adsense_slot_id",
+  "grow_id",
   "analytics_id",
   "google_site_verification",
 ]);

@@ -217,7 +217,8 @@ create policy "Admins can manage settings"
 -- Seed default settings
 insert into public.settings (key, value) values
   ('site_name', 'TrendsMix'),
-  ('site_description', 'Original stories across every genre — horror, mystery, romance, fantasy, sci-fi, and drama.'),
+  ('site_description', 'Original short fiction across drama, mystery, romance, and more. Fresh stories published daily on TrendsMix — free to read.'),
+  ('contact_email', 'contact@trendsmix.online'),
   ('logo_url', ''),
   ('favicon_url', ''),
   ('twitter_url', ''),

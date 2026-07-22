@@ -69,6 +69,64 @@ export default function PrivacyPage() {
             anonymous usage data to help us understand how visitors interact with
             the site.
           </li>
+          <li>
+            <strong className="text-zinc-200">Advertising.</strong> We work with
+            third-party advertising partners (such as Google AdSense and Mediavine)
+            that may use cookies, device identifiers, and similar technologies to
+            serve ads and measure their performance.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="privacy-advertising">
+        <h2 id="privacy-advertising" className="text-xl font-semibold text-white">
+          Advertising &amp; Third-Party Ad Partners
+        </h2>
+        <p className="mt-4">
+          To keep TrendsMix free to read, we display advertising served by
+          third-party partners, including Google AdSense and Mediavine (Journey by
+          Mediavine). These partners, and vendors they work with, may use cookies
+          and similar technologies to collect information about your visits to
+          this and other websites in order to provide relevant advertisements
+          about goods and services of interest to you.
+        </p>
+        <ul className="mt-3 list-disc space-y-2 pl-5">
+          <li>
+            Third-party vendors, including Google, use cookies to serve ads based
+            on your prior visits to this website or other websites.
+          </li>
+          <li>
+            Google&apos;s use of advertising cookies enables it and its partners
+            to serve ads to you based on your visit to this and/or other sites on
+            the internet.
+          </li>
+          <li>
+            You may opt out of personalized advertising by visiting{" "}
+            <a
+              href="https://www.google.com/settings/ads"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-400 underline decoration-orange-400/30 underline-offset-2 transition-colors hover:text-orange-300"
+            >
+              Google Ads Settings
+            </a>{" "}
+            or{" "}
+            <a
+              href="https://optout.aboutads.info/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-400 underline decoration-orange-400/30 underline-offset-2 transition-colors hover:text-orange-300"
+            >
+              aboutads.info
+            </a>
+            .
+          </li>
+          <li>
+            If you are located in the European Economic Area, the United Kingdom,
+            or a US state with applicable privacy laws, our advertising partners
+            present a consent management notice so you can manage or withdraw your
+            consent to personalized advertising at any time.
+          </li>
         </ul>
       </section>
 

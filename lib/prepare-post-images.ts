@@ -1,5 +1,13 @@
 import type { ImageMirrorBackend } from "@/lib/image-mirror-backend";
-import { isHostedImage } from "@/lib/placeholder-image";
+import {
+  isBrokenExternalImage,
+  isHostedImage,
+} from "@/lib/placeholder-image";
+
+export type PreparePostImagesOptions = {
+  /** When false, skip unmirrorable images instead of failing the request. */
+  strict?: boolean;
+};
 
 const EXTERNAL_IMAGE_IN_HTML =
   /<img\b[^>]*\bsrc=["'](https?:\/\/[^"']+)["']/gi;
@@ -32,13 +40,20 @@ function collectExternalUrls(
 async function mirrorOptionalImage(
   backend: ImageMirrorBackend,
   url: string | null | undefined,
+  strict: boolean,
 ): Promise<string | null> {
   const trimmed = url?.trim() || null;
   if (!trimmed) return null;
   if (isHostedImage(trimmed)) return trimmed;
+  if (isBrokenExternalImage(trimmed)) return null;
   const mirrored = await backend.mirrorUrl(trimmed);
   if (!mirrored) {
-    throw new Error(`Could not save image to storage: ${trimmed.slice(0, 80)}`);
+    if (strict) {
+      throw new Error(
+        `Could not save image to storage: ${trimmed.slice(0, 80)}`,
+      );
+    }
+    return null;
   }
   return mirrored;
 }
@@ -48,24 +63,28 @@ export async function preparePostImages(
   featuredImage: string | null | undefined,
   content: string,
   extraUrls: Array<string | null | undefined> = [],
+  options: PreparePostImagesOptions = {},
 ): Promise<{
   featuredImage: string | null;
   content: string;
   extras: Array<string | null>;
 }> {
+  const strict = options.strict ?? true;
   let nextFeatured = featuredImage?.trim() || null;
   let nextContent = content;
 
-  nextFeatured = await mirrorOptionalImage(backend, nextFeatured);
+  nextFeatured = await mirrorOptionalImage(backend, nextFeatured, strict);
   nextContent = await backend.mirrorHtml(nextContent);
 
   const extras: Array<string | null> = [];
   for (const extra of extraUrls) {
-    extras.push(await mirrorOptionalImage(backend, extra));
+    extras.push(await mirrorOptionalImage(backend, extra, strict));
   }
 
-  const remaining = collectExternalUrls(nextFeatured, nextContent, extras);
-  if (remaining.length > 0) {
+  const remaining = collectExternalUrls(nextFeatured, nextContent, extras).filter(
+    (url) => !isBrokenExternalImage(url),
+  );
+  if (strict && remaining.length > 0) {
     throw new Error(
       "Some images could not be saved to Supabase storage. Check the media bucket and mirror-image function.",
     );

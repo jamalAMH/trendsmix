@@ -5,7 +5,7 @@ export const SITE_URL = "https://www.trendsmix.online";
 export const SITE_DOMAIN = "trendsmix.online";
 
 export const SITE_DESCRIPTION =
-  "Gripping drama, revenge, and real-life inspired stories that keep you reading. Fresh fiction published daily — free, no ads, no paywalls.";
+  "Original short fiction across drama, mystery, romance, and more. Fresh stories published daily on TrendsMix — free to read.";
 
 export const SITE_KEYWORDS = [
   "fiction",

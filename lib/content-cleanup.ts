@@ -18,6 +18,10 @@ const NOISE_PATTERNS: RegExp[] = [
   /Like and share/gi,
   /Source:\s*Facebook/gi,
   /Originally posted on Facebook/gi,
+  /Click here to read more/gi,
+  /Share this story/gi,
+  /Image credits?:.*$/gim,
+  /Photo:? Facebook/gi,
 ];
 
 export function stripHtml(html: string): string {
@@ -147,9 +151,14 @@ export function structureContent(html: string): string {
   return sections.join("\n");
 }
 
+export function addEditorialIntro(_title: string, html: string): string {
+  // Keep story content as-is — injected "unpack the story" intros look spammy to readers and ad reviewers.
+  return html;
+}
+
 export function addEditorialFooter(html: string): string {
-  if (html.includes("TrendsMix editorial")) return html;
-  return `${html}\n<p><em>This article was edited and fact-checked by the TrendsMix editorial team before publication.</em></p>`;
+  if (html.includes("Originally published on TrendsMix")) return html;
+  return `${html}\n<p><em>Originally published on TrendsMix.</em></p>`;
 }
 
 export function optimizePostContent(title: string, content: string): string {
@@ -157,6 +166,7 @@ export function optimizePostContent(title: string, content: string): string {
   html = removeTitleDuplicate(title, html);
   html = dedupeParagraphs(html);
   html = structureContent(html);
+  html = addEditorialIntro(title, html);
   html = addEditorialFooter(html);
   return html;
 }

@@ -1,5 +1,8 @@
 import { updateSession } from "@/lib/supabase/middleware";
-import { shouldBlockAfricanVisitor } from "@/lib/geo";
+import {
+  shouldBlockAfricanVisitor,
+  shouldBypassSiteRestrictions,
+} from "@/lib/geo";
 import { NextResponse, type NextRequest } from "next/server";
 
 interface PublicSiteSettings {
@@ -70,6 +73,11 @@ export async function proxy(request: NextRequest) {
     pathname === "/maintenance" ||
     pathname === "/geo-blocked"
   ) {
+    return NextResponse.next({ request });
+  }
+
+  // Search/ad crawlers always see the live site (SEO + AdSense).
+  if (shouldBypassSiteRestrictions(request)) {
     return NextResponse.next({ request });
   }
 

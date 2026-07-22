@@ -15,6 +15,24 @@ export function isAfricanCountry(code: string): boolean {
   return AFRICAN_COUNTRY_CODES.has(code.toUpperCase());
 }
 
+/**
+ * Search engines, ad crawlers and major social preview bots.
+ * These MUST never be geo-blocked or shown the maintenance page, so Google
+ * (Search/AdSense), Bing and partners can always crawl for indexing and ads.
+ */
+const SEARCH_AD_BOT_PATTERN =
+  /(googlebot|adsbot-google|mediapartners-google|apis-google|google-inspectiontool|storebot-google|googleother|google-extended|bingbot|adidxbot|msnbot|duckduckbot|yandex(bot)?|baiduspider|slurp|applebot|facebookexternalhit|facebot|meta-externalagent|twitterbot|linkedinbot|pinterest|embedly|quora link preview|outbrain|ahrefsbot|semrushbot|dotbot|rogerbot|petalbot|bytespider)/i;
+
+export function isSearchOrAdBot(userAgent: string | null | undefined): boolean {
+  if (!userAgent) return false;
+  return SEARCH_AD_BOT_PATTERN.test(userAgent);
+}
+
+/** True when the request is a known crawler that must always see the live site. */
+export function shouldBypassSiteRestrictions(request: NextRequest): boolean {
+  return isSearchOrAdBot(request.headers.get("user-agent"));
+}
+
 export function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) return forwarded.split(",")[0].trim();
@@ -60,6 +78,9 @@ export function shouldBlockAfricanVisitor(
   extraAllowedIps = "",
 ): boolean {
   if (!geoBlockAfrica) return false;
+
+  // Never geo-block search/ad crawlers — required for SEO & AdSense.
+  if (shouldBypassSiteRestrictions(request)) return false;
 
   const { country } = getGeoFromHeaders(request.headers);
   if (!isAfricanCountry(country)) return false;

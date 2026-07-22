@@ -93,9 +93,10 @@ export default function AboutPage() {
             distraction-free, whether you are on a phone, tablet, or desktop.
           </p>
           <p className="mt-3">
-            We never gate content behind paywalls, and we never interrupt a
-            story with advertising. Reading on TrendsMix is, and will remain,
-            free.
+            We never gate content behind paywalls. Reading on TrendsMix is, and
+            will remain, free. To keep it that way, some pages display
+            advertising from trusted partners — thoughtfully placed so it never
+            gets in the way of the story.
           </p>
         </section>
 

@@ -7,6 +7,7 @@ import {
   stripHtml,
 } from "@/lib/content-cleanup";
 import { isAiRewriteConfigured, rewritePostWithAi } from "@/lib/ai-rewrite";
+import { deepRewritePost } from "@/lib/deep-rewrite";
 
 export interface OptimizedPost {
   title: string;
@@ -22,15 +23,15 @@ export function optimizePostFree(
   title: string,
   content: string,
 ): OptimizedPost {
-  const cleaned = optimizePostContent(title, content);
-  const finalExcerpt = generateExcerpt(cleaned);
+  // Prefer deep editorial rewrite (structure + rephrase) over light cleanup.
+  const rewritten = deepRewritePost(title, content);
   return {
-    title: title.trim(),
-    excerpt: finalExcerpt,
-    content: cleaned,
-    meta_title: buildMetaTitle(title),
-    meta_description: buildMetaDescription(cleaned, title),
-    read_time: calculateReadTime(cleaned),
+    title: rewritten.title,
+    excerpt: rewritten.excerpt,
+    content: rewritten.content,
+    meta_title: rewritten.meta_title,
+    meta_description: rewritten.meta_description,
+    read_time: rewritten.read_time,
     aiRewritten: false,
   };
 }

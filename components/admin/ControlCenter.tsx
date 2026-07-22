@@ -397,7 +397,7 @@ export default function ControlCenter({
               id="maintenance_mode"
               name="maintenance_mode"
               label="Maintenance Mode"
-              description="Hide the public site from visitors. Admin stays accessible."
+              description="Hide the public site from visitors. Admin stays accessible. Google/Bing/AdSense bots still see the live site."
               checked={settings.maintenance_mode}
               disabled={!isAdmin}
               onChange={(checked) =>
@@ -409,13 +409,19 @@ export default function ControlCenter({
               id="geo_block_africa"
               name="geo_block_africa"
               label="Block Africa (geo)"
-              description="Block all African countries including Morocco. Only whitelisted IPs can access."
+              description="Block African visitors (incl. Morocco). Whitelisted IPs bypass. Search & ad bots are never blocked."
               checked={settings.geo_block_africa}
               disabled={!isAdmin}
               onChange={(checked) =>
                 setSettings((s) => ({ ...s, geo_block_africa: checked }))
               }
             />
+
+            <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2.5 text-xs text-emerald-400/90">
+              <strong className="text-emerald-400">Bots always allowed.</strong>{" "}
+              Googlebot, AdsBot, Mediapartners-Google, Bing and other crawlers
+              bypass geo-block and maintenance — required for SEO & AdSense.
+            </div>
 
             <div>
               <label
@@ -631,9 +637,14 @@ export default function ControlCenter({
             ok={!settings.geo_block_africa}
             detail={
               settings.geo_block_africa
-                ? "Africa blocked — whitelist your IP"
+                ? "Africa blocked — whitelist your IP (bots still allowed)"
                 : "Africa access allowed"
             }
+          />
+          <StatusItem
+            label="Search / Ad Bots"
+            ok
+            detail="Never blocked — indexing & AdSense OK"
           />
           <StatusItem
             label="Image Storage (Supabase)"
