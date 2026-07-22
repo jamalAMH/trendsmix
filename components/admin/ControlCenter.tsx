@@ -13,6 +13,7 @@ import {
   updateControlSettings,
 } from "@/lib/actions/control";
 import { fixBrokenPostImages } from "@/lib/actions/images";
+import { isValidGa4Id } from "@/lib/google-analytics";
 import type { Setting } from "@/types/database";
 
 interface ControlStats {
@@ -126,6 +127,7 @@ export default function ControlCenter({
     geo_allowed_ips: "",
     n8n_enabled: true,
     n8n_api_key: "",
+    analytics_id: "",
   });
   const [loading, setLoading] = useState(true);
   const [pending, startTransition] = useTransition();
@@ -170,6 +172,7 @@ export default function ControlCenter({
         geo_allowed_ips: map.geo_allowed_ips ?? "",
         n8n_enabled: map.n8n_enabled !== "false",
         n8n_api_key: map.n8n_api_key ?? "",
+        analytics_id: map.analytics_id ?? "",
       });
       setLoading(false);
     }
@@ -583,6 +586,15 @@ export default function ControlCenter({
               systemStatus.imageStorageConfigured
                 ? "External images saved permanently"
                 : "Deploy mirror-image function on Supabase"
+            }
+          />
+          <StatusItem
+            label="Google Analytics (GA4)"
+            ok={isValidGa4Id(settings.analytics_id)}
+            detail={
+              settings.analytics_id
+                ? settings.analytics_id
+                : "Add G- ID in Settings"
             }
           />
           <StatusItem

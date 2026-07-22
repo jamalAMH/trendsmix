@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isValidGa4Id, normalizeAnalyticsId } from "@/lib/google-analytics";
 import { requireAdmin } from "./helpers";
 
 const ALLOWED_KEYS = new Set([
@@ -21,7 +22,15 @@ export async function updateSettings(formData: FormData) {
   const { supabase } = await requireAdmin();
 
   for (const key of ALLOWED_KEYS) {
-    const value = (formData.get(key) as string) ?? "";
+    let value = (formData.get(key) as string) ?? "";
+    if (key === "analytics_id") {
+      value = normalizeAnalyticsId(value);
+      if (value && !isValidGa4Id(value)) {
+        throw new Error(
+          "Google Analytics ID must be a GA4 Measurement ID (format: G-XXXXXXXXXX).",
+        );
+      }
+    }
     const { data: existing } = await supabase
       .from("settings")
       .select("id")

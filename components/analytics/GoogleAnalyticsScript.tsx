@@ -1,24 +1,15 @@
-import Script from "next/script";
+import { Suspense } from "react";
 import { getSetting } from "@/lib/settings";
+import { isValidGa4Id } from "@/lib/google-analytics";
+import GoogleAnalyticsInner from "@/components/analytics/GoogleAnalyticsInner";
 
 export default async function GoogleAnalyticsScript() {
-  const measurementId = await getSetting("analytics_id");
-  if (!measurementId) return null;
+  const measurementId = (await getSetting("analytics_id")).trim();
+  if (!measurementId || !isValidGa4Id(measurementId)) return null;
 
   return (
-    <>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${measurementId}');
-        `}
-      </Script>
-    </>
+    <Suspense fallback={null}>
+      <GoogleAnalyticsInner measurementId={measurementId} />
+    </Suspense>
   );
 }
