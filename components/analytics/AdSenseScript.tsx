@@ -9,10 +9,13 @@ export default async function AdSenseScript() {
     : `ca-${clientId}`;
 
   return (
-    <script
-      async
-      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedClientId}`}
-      crossOrigin="anonymous"
-    />
+    <>
+      <meta name="google-adsense-account" content={normalizedClientId} />
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${normalizedClientId}`}
+        crossOrigin="anonymous"
+      />
+    </>
   );
 }
