@@ -13,6 +13,9 @@ import {
   updateControlSettings,
 } from "@/lib/actions/control";
 import { fixBrokenPostImages } from "@/lib/actions/images";
+import {
+  optimizePostsBatch,
+} from "@/lib/actions/posts-optimize";
 import { isValidGa4Id } from "@/lib/google-analytics";
 import type { Setting } from "@/types/database";
 
@@ -134,6 +137,7 @@ export default function ControlCenter({
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [optimizeProgress, setOptimizeProgress] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -246,6 +250,47 @@ export default function ControlCenter({
         drafts: list.filter((p) => p.status === "draft").length,
         featured: list.filter((p) => p.featured).length,
       }));
+    });
+  }
+
+  function runOptimizeAll() {
+    if (!isAdmin) {
+      showError("Admin role required. Ask an admin to upgrade your account.");
+      return;
+    }
+
+    const aiNote =
+      "With OPENAI_API_KEY: full AI rewrite (~$2-5 for 210 posts).\nWithout: cleanup + structure only.\n\nContinue?";
+    if (!confirm(aiNote)) return;
+
+    startTransition(async () => {
+      setOptimizeProgress("Starting…");
+      setError(null);
+
+      let offset = 0;
+      let total = 0;
+      let updatedTotal = 0;
+
+      while (true) {
+        const result = await optimizePostsBatch(offset, 3, true);
+        if (!result.ok) {
+          showError(result.error);
+          setOptimizeProgress(null);
+          return;
+        }
+
+        total = result.total;
+        offset = result.offset;
+        updatedTotal += result.updated;
+        setOptimizeProgress(`${offset} / ${total} processed`);
+
+        if (!result.hasMore) break;
+      }
+
+      setOptimizeProgress(null);
+      showMessage(
+        `Optimized ${updatedTotal} posts.${total > 0 ? ` (${total} total)` : ""}`,
+      );
     });
   }
 
@@ -455,6 +500,17 @@ export default function ControlCenter({
             Bulk Actions
           </h2>
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 space-y-3">
+            <button
+              type="button"
+              disabled={pending || !isAdmin}
+              onClick={runOptimizeAll}
+              className="w-full rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5 text-left text-sm text-emerald-400 transition-colors hover:bg-emerald-500/20 disabled:opacity-40"
+            >
+              {optimizeProgress
+                ? `Optimizing posts… ${optimizeProgress}`
+                : "Optimize all posts (AdSense-ready)"}
+            </button>
+
             <button
               type="button"
               disabled={pending || !isAdmin}

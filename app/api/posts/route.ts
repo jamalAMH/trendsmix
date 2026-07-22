@@ -1,5 +1,10 @@
 import { NextResponse } from "next/server";
 import { verifyApiKey } from "@/lib/api-auth";
+import {
+  cleanScrapedContent,
+  calculateReadTime,
+  generateExcerpt,
+} from "@/lib/content-cleanup";
 import { hasExternalImages } from "@/lib/prepare-post-images";
 import {
   isImageStorageConfigured,
@@ -16,41 +21,8 @@ interface CreatePostBody {
   "url image"?: string;
 }
 
-const NOISE_PATTERNS = [
-  /\d+×Search for:.*?Menu/gi,
-  /\bAd\b(?=\s*[A-Z])/g,
-  /Advertisement/gi,
-  /\| Theme:.*$/gm,
-  /Search for:.*?(?=<|$)/gi,
-  /\* \* \* \*/g,
-  /Menu\s*#/gi,
-  /Restaurants?\s*\*/gi,
-];
-
-function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
 function cleanContent(html: string): string {
-  let cleaned = html;
-  for (const pattern of NOISE_PATTERNS) {
-    cleaned = cleaned.replace(pattern, "");
-  }
-  return cleaned
-    .replace(/(<br\s*\/?>\s*){3,}/gi, "<br><br>")
-    .replace(/^\s+|\s+$/g, "");
-}
-
-function generateExcerpt(html: string, maxLen = 160): string {
-  const text = stripHtml(html);
-  if (text.length <= maxLen) return text;
-  const cut = text.lastIndexOf(" ", maxLen);
-  return text.slice(0, cut > 0 ? cut : maxLen) + "...";
-}
-
-function calculateReadTime(html: string): number {
-  const words = stripHtml(html).split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 230));
+  return cleanScrapedContent(html);
 }
 
 function getSupabase() {
