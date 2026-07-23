@@ -39,33 +39,77 @@ function isAlreadyHosted(url: string, supabaseUrl: string): boolean {
   }
 }
 
+async function expectedN8nKeys(
+  service: ReturnType<typeof createClient>,
+): Promise<string[]> {
+  const keys: string[] = [];
+
+  const fromEnv = Deno.env.get("N8N_API_KEY")?.trim();
+  if (fromEnv) keys.push(fromEnv);
+
+  const { data } = await service
+    .from("settings")
+    .select("value")
+    .eq("key", "n8n_api_key")
+    .maybeSingle();
+
+  if (data?.value) {
+    const fromDb = String(data.value).trim();
+    if (fromDb && !keys.includes(fromDb)) keys.push(fromDb);
+  }
+
+  return keys;
+}
+
+function collectProvidedApiKey(
+  req: Request,
+  bodyKey?: string | null,
+): string | null {
+  const headerKey = req.headers.get("x-api-key")?.trim();
+  if (headerKey) return headerKey;
+
+  if (bodyKey?.trim()) return bodyKey.trim();
+
+  const auth = req.headers.get("authorization");
+  if (auth?.startsWith("Bearer ")) {
+    const token = auth.slice(7).trim();
+    // n8n-style keys are not JWTs
+    if (token && !token.includes(".")) return token;
+  }
+
+  return null;
+}
+
 async function isAuthorized(
   req: Request,
   service: ReturnType<typeof createClient>,
+  bodyKey?: string | null,
 ): Promise<boolean> {
-  const apiKey = req.headers.get("x-api-key");
-  if (apiKey) {
-    const { data } = await service
-      .from("settings")
-      .select("value")
-      .eq("key", "n8n_api_key")
-      .maybeSingle();
-    if (data?.value && apiKey === data.value) return true;
+  const provided = collectProvidedApiKey(req, bodyKey);
+  if (provided) {
+    const expected = await expectedN8nKeys(service);
+    if (expected.includes(provided)) return true;
   }
 
   const auth = req.headers.get("authorization");
   if (auth?.startsWith("Bearer ")) {
-    const token = auth.slice(7);
-    const {
-      data: { user },
-    } = await service.auth.getUser(token);
-    if (user) {
-      const { data: profile } = await service
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (profile?.role === "admin") return true;
+    const token = auth.slice(7).trim();
+    // Service role JWT can call the function for internal/admin jobs
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (serviceKey && token === serviceKey) return true;
+
+    if (token.includes(".")) {
+      const {
+        data: { user },
+      } = await service.auth.getUser(token);
+      if (user) {
+        const { data: profile } = await service
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (profile?.role === "admin") return true;
+      }
     }
   }
 
@@ -184,19 +228,24 @@ Deno.serve(async (req: Request) => {
 
   const service = createClient(supabaseUrl, serviceKey);
 
-  if (!(await isAuthorized(req, service))) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-
-  let body: { action?: string; url?: string; html?: string };
+  let body: {
+    action?: string;
+    url?: string;
+    html?: string;
+    api_key?: string;
+  };
   try {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (!(await isAuthorized(req, service, body.api_key))) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
       headers: { "Content-Type": "application/json" },
     });
   }

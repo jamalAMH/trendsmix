@@ -14,7 +14,11 @@ import type { MirrorAuth } from "@/lib/image-mirror-edge";
 import { createServiceClient } from "@/lib/supabase/service";
 
 export function isImageStorageConfigured(): boolean {
-  return !!createServiceClient() || isEdgeMirrorAvailable();
+  // Direct upload (service role) OR Edge Function reachable with an API key
+  return (
+    !!createServiceClient() ||
+    (isEdgeMirrorAvailable() && !!defaultMirrorAuth())
+  );
 }
 
 function resolveMirrorBackend(auth?: MirrorAuth | null) {
@@ -23,6 +27,11 @@ function resolveMirrorBackend(auth?: MirrorAuth | null) {
 
   const mirrorAuth = auth ?? defaultMirrorAuth();
   if (mirrorAuth && isEdgeMirrorAvailable()) {
+    return createEdgeMirrorBackend(mirrorAuth);
+  }
+
+  // Edge URL exists but auth missing — still try with whatever auth was passed
+  if (mirrorAuth && !!process.env.NEXT_PUBLIC_SUPABASE_URL) {
     return createEdgeMirrorBackend(mirrorAuth);
   }
 

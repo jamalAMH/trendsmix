@@ -8,15 +8,40 @@ function mirrorFunctionUrl(): string | null {
   return `${base}/functions/v1/mirror-image`;
 }
 
-function authHeaders(auth: MirrorAuth): Record<string, string> {
-  if (auth.type === "api-key") {
-    return { "x-api-key": auth.key };
+/** Gateway + custom auth headers for the mirror-image Edge Function. */
+function edgeRequestHeaders(auth: MirrorAuth): Record<string, string> {
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  // Supabase Functions gateway expects the project anon key
+  if (anon) {
+    headers.apikey = anon;
+    if (auth.type === "bearer") {
+      headers.Authorization = `Bearer ${auth.token}`;
+    } else {
+      headers.Authorization = `Bearer ${anon}`;
+    }
+  } else if (auth.type === "bearer") {
+    headers.Authorization = `Bearer ${auth.token}`;
   }
-  return { Authorization: `Bearer ${auth.token}` };
+
+  if (auth.type === "api-key") {
+    headers["x-api-key"] = auth.key;
+  }
+
+  return headers;
 }
 
 export function isEdgeMirrorAvailable(): boolean {
   return !!mirrorFunctionUrl();
+}
+
+export function defaultMirrorAuth(): MirrorAuth | null {
+  const key = process.env.N8N_API_KEY?.trim();
+  if (key) return { type: "api-key", key };
+  return null;
 }
 
 export async function mirrorUrlViaEdge(
@@ -28,11 +53,12 @@ export async function mirrorUrlViaEdge(
 
   const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(auth),
-    },
-    body: JSON.stringify({ action: "mirror", url: sourceUrl }),
+    headers: edgeRequestHeaders(auth),
+    body: JSON.stringify({
+      action: "mirror",
+      url: sourceUrl,
+      ...(auth.type === "api-key" ? { api_key: auth.key } : {}),
+    }),
   });
 
   if (!res.ok) return null;
@@ -50,21 +76,16 @@ export async function mirrorHtmlViaEdge(
 
   const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...authHeaders(auth),
-    },
-    body: JSON.stringify({ action: "mirror-html", html }),
+    headers: edgeRequestHeaders(auth),
+    body: JSON.stringify({
+      action: "mirror-html",
+      html,
+      ...(auth.type === "api-key" ? { api_key: auth.key } : {}),
+    }),
   });
 
   if (!res.ok) return html;
 
   const data = (await res.json()) as { html?: string };
   return data.html ?? html;
-}
-
-export function defaultMirrorAuth(): MirrorAuth | null {
-  const key = process.env.N8N_API_KEY;
-  if (key) return { type: "api-key", key };
-  return null;
 }

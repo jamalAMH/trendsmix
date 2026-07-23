@@ -7,7 +7,11 @@ import {
   isImageStorageConfigured,
   persistPostImages,
 } from "@/lib/post-images";
-import { placeholderImageUrl } from "@/lib/placeholder-image";
+import { defaultMirrorAuth } from "@/lib/image-mirror-edge";
+import {
+  isHostedImage,
+  placeholderImageUrl,
+} from "@/lib/placeholder-image";
 import { revalidateStoryPaths } from "@/lib/revalidate-stories";
 import { isN8nEnabled } from "@/lib/settings";
 import { createClient } from "@supabase/supabase-js";
@@ -91,48 +95,60 @@ export async function POST(request: Request) {
     rawImage = placeholderImageUrl(title);
   }
 
+  // Permanent storage is required for any external image — never keep CDN URLs in DB
   if (hasExternalImages(rawImage, preparedContent) && !isImageStorageConfigured()) {
     return NextResponse.json(
       {
         error:
-          "Image storage is not configured. Deploy the mirror-image Supabase function or add SUPABASE_SERVICE_ROLE_KEY.",
+          "Image storage is not configured. Set N8N_API_KEY on the server and deploy the mirror-image Supabase function (or SUPABASE_SERVICE_ROLE_KEY).",
       },
       { status: 503 },
     );
   }
 
   let featuredImage = rawImage;
+  let imagesMirrored = false;
 
-  if (isImageStorageConfigured()) {
+  if (hasExternalImages(rawImage, preparedContent)) {
     try {
       const apiKeyHeader = request.headers.get("x-api-key");
       const authHeader = request.headers.get("authorization");
       const providedKey =
-        apiKeyHeader ??
-        (authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null);
-      const mirrorAuth = providedKey
-        ? ({ type: "api-key" as const, key: providedKey })
-        : null;
+        apiKeyHeader?.trim() ||
+        (authHeader?.startsWith("Bearer ")
+          ? authHeader.slice(7).trim()
+          : null);
+      const mirrorAuth =
+        (providedKey ? ({ type: "api-key" as const, key: providedKey }) : null) ??
+        defaultMirrorAuth();
+
       const prepared = await persistPostImages(
         rawImage,
         preparedContent,
         [],
         mirrorAuth,
-        { strict: false },
+        { strict: true },
       );
-      featuredImage = prepared.featuredImage ?? rawImage;
+
+      featuredImage = prepared.featuredImage ?? placeholderImageUrl(title);
       preparedContent = prepared.content;
+      imagesMirrored = true;
     } catch (error) {
       return NextResponse.json(
         {
           error:
             error instanceof Error
               ? error.message
-              : "Failed to save images to storage.",
+              : "Failed to save images to Supabase storage.",
         },
         { status: 502 },
       );
     }
+  }
+
+  // Safety net: never persist a non-hosted featured image
+  if (!featuredImage || !isHostedImage(featuredImage)) {
+    featuredImage = placeholderImageUrl(title);
   }
 
   const optimized = optimizePostFree(title, preparedContent);
@@ -178,7 +194,13 @@ export async function POST(request: Request) {
   revalidateStoryPaths(post.slug);
 
   return NextResponse.json(
-    { ok: true, post, url: `/stories/${post.slug}` },
+    {
+      ok: true,
+      post,
+      url: `/stories/${post.slug}`,
+      images_mirrored: imagesMirrored,
+      featured_image: featuredImage,
+    },
     { status: 201 },
   );
 }

@@ -651,8 +651,8 @@ export default function ControlCenter({
             ok={systemStatus.imageStorageConfigured}
             detail={
               systemStatus.imageStorageConfigured
-                ? "External images saved permanently"
-                : "Deploy mirror-image function on Supabase"
+                ? "Auto-save on publish — external images → Supabase"
+                : "Set N8N_API_KEY + deploy mirror-image function"
             }
           />
           <StatusItem
