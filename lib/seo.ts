@@ -195,14 +195,33 @@ export function articleJsonLd(story: Story) {
       "@type": "Organization",
       name: SITE_NAME,
       url: getSiteUrl(),
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/icon"),
+      },
     },
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": absoluteUrl(`/stories/${story.slug}`),
     },
-    ...(story.category ? { articleSection: story.category } : {}),
+    ...(story.category
+      ? {
+          articleSection: formatCategoryLabel(story.category),
+          about: {
+            "@type": "Thing",
+            name: formatCategoryLabel(story.category),
+          },
+        }
+      : {}),
     inLanguage: "en-US",
   };
+}
+
+function formatCategoryLabel(category: string): string {
+  return category
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export function breadcrumbJsonLd(

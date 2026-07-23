@@ -3,6 +3,7 @@ import { sanitizeHtml } from "@/lib/sanitize";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
+import CategoryBadge from "@/components/shared/CategoryBadge";
 import JsonLd from "@/components/seo/JsonLd";
 import ReadingProgress from "@/components/stories/ReadingProgress";
 import ShareButtons from "@/components/stories/ShareButtons";
@@ -21,7 +22,7 @@ import {
   getRelatedStories,
   getStoryBySlug,
 } from "@/lib/stories";
-import { formatDate } from "@/lib/utils";
+import { formatCategory, formatDate } from "@/lib/utils";
 
 export const revalidate = 60;
 
@@ -64,17 +65,24 @@ export default async function StoryDetailsPage({
   const relatedStories = await getRelatedStories(slug, 3);
   const storyUrl = absoluteUrl(`/stories/${story.slug}`);
 
+  const breadcrumbItems = [
+    { name: "Home", item: absoluteUrl("/") },
+    { name: "Stories", item: absoluteUrl("/stories") },
+    ...(story.category
+      ? [
+          {
+            name: formatCategory(story.category),
+            item: absoluteUrl(`/category/${story.category}`),
+          },
+        ]
+      : []),
+    { name: story.title, item: storyUrl },
+  ];
+
   return (
     <>
       <JsonLd
-        data={[
-          articleJsonLd(story),
-          breadcrumbJsonLd([
-            { name: "Home", item: absoluteUrl("/") },
-            { name: "Stories", item: absoluteUrl("/stories") },
-            { name: story.title, item: storyUrl },
-          ]),
-        ]}
+        data={[articleJsonLd(story), breadcrumbJsonLd(breadcrumbItems)]}
       />
 
       <ReadingProgress />
@@ -89,6 +97,13 @@ export default async function StoryDetailsPage({
               <li>
                 <Link href="/stories">Stories</Link>
               </li>
+              {story.category && (
+                <li>
+                  <Link href={`/category/${story.category}`}>
+                    {formatCategory(story.category)}
+                  </Link>
+                </li>
+              )}
               <li aria-current="page">{story.title}</li>
             </ol>
           </nav>
@@ -110,7 +125,11 @@ export default async function StoryDetailsPage({
 
             <div className="absolute inset-x-0 bottom-0 mx-auto max-w-3xl px-4 pb-10 pt-24 sm:px-6 lg:px-8">
               <Link
-                href="/stories"
+                href={
+                  story.category
+                    ? `/category/${story.category}`
+                    : "/stories"
+                }
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
               >
                 <svg
@@ -127,10 +146,15 @@ export default async function StoryDetailsPage({
                     d="M10 19l-7-7m0 0l7-7m-7 7h18"
                   />
                 </svg>
-                Back to Stories
+                {story.category
+                  ? `More ${formatCategory(story.category)}`
+                  : "Back to Stories"}
               </Link>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
+                {story.category && (
+                  <CategoryBadge category={story.category} />
+                )}
                 <ReadingTimeBadge minutes={story.readTime} />
                 <time
                   dateTime={story.publishedAt}

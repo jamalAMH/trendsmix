@@ -160,7 +160,7 @@ export async function POST(request: Request) {
     p_content: optimized.content,
     p_slug: null,
     p_excerpt: optimized.excerpt,
-    p_category_slug: null,
+    p_category_slug: "drama",
     p_status: "published",
     p_featured: false,
     p_read_time: optimized.read_time,

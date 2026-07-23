@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  FOOTER_CATEGORY_LINKS,
   FOOTER_COMPANY_LINKS,
   FOOTER_LEGAL_LINKS,
   SITE_NAME,
@@ -30,8 +31,26 @@ export default function Footer() {
 
             <nav
               aria-label="Footer navigation"
-              className="grid gap-10 sm:grid-cols-2"
+              className="grid gap-10 sm:grid-cols-3"
             >
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                  Genres
+                </p>
+                <ul className="mt-5 space-y-3">
+                  {FOOTER_CATEGORY_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-zinc-400 transition-colors hover:text-orange-400"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
                   Company

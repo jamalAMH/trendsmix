@@ -1,12 +1,14 @@
 interface SearchBarProps {
   placeholder?: string;
+  defaultValue?: string;
 }
 
 export default function SearchBar({
   placeholder = "Search stories by title or genre...",
+  defaultValue = "",
 }: SearchBarProps) {
   return (
-    <form className="w-full" action="/stories" method="get">
+    <form className="w-full" action="/stories" method="get" role="search">
       <label htmlFor="story-search" className="sr-only">
         Search stories
       </label>
@@ -30,6 +32,7 @@ export default function SearchBar({
             id="story-search"
             name="q"
             type="search"
+            defaultValue={defaultValue}
             placeholder={placeholder}
             className="w-full rounded-xl border border-zinc-700/80 bg-zinc-900/60 py-3.5 pl-11 pr-4 text-sm text-white placeholder:text-zinc-500 backdrop-blur-sm transition-colors focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
           />

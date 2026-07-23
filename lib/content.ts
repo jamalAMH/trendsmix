@@ -217,7 +217,7 @@ export async function getRelatedStories(
 
   if (!current) return [];
 
-  const { data: related } = await supabase
+  let query = supabase
     .from("posts")
     .select("*, categories(*), profiles(*)")
     .eq("status", "published")
@@ -225,5 +225,82 @@ export async function getRelatedStories(
     .order("published_at", { ascending: false })
     .limit(limit);
 
-  return ((related as PostWithRelations[]) ?? []).map(postToStory);
+  if (current.category_id) {
+    query = query.eq("category_id", current.category_id);
+  }
+
+  const { data: related } = await query;
+
+  const stories = ((related as PostWithRelations[]) ?? []).map(postToStory);
+
+  // Fallback: if category has too few posts, fill with latest
+  if (stories.length < limit) {
+    const exclude = new Set([slug, ...stories.map((s) => s.slug)]);
+    const { data: latest } = await supabase
+      .from("posts")
+      .select("*, categories(*), profiles(*)")
+      .eq("status", "published")
+      .neq("slug", slug)
+      .order("published_at", { ascending: false })
+      .limit(limit * 2);
+
+    for (const post of (latest as PostWithRelations[]) ?? []) {
+      if (exclude.has(post.slug)) continue;
+      stories.push(postToStory(post));
+      if (stories.length >= limit) break;
+    }
+  }
+
+  return stories.slice(0, limit);
+}
+
+export async function getStoriesByCategory(
+  categorySlug: string,
+): Promise<Story[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = getSupabase();
+
+  const { data } = await supabase
+    .from("posts")
+    .select("*, categories!inner(*), profiles(*)")
+    .eq("status", "published")
+    .eq("categories.slug", categorySlug)
+    .order("published_at", { ascending: false });
+
+  return ((data as PostWithRelations[]) ?? []).map(postToStory);
+}
+
+export async function getCategorySlugsWithPosts(): Promise<string[]> {
+  if (!isSupabaseConfigured()) return [];
+  const supabase = getSupabase();
+
+  const { data } = await supabase
+    .from("posts")
+    .select("categories!inner(slug)")
+    .eq("status", "published");
+
+  const slugs = new Set<string>();
+  for (const row of data ?? []) {
+    const cat = (row as { categories?: { slug?: string } | null }).categories;
+    if (cat?.slug) slugs.add(cat.slug);
+  }
+  return [...slugs];
+}
+
+export async function searchStories(query: string): Promise<Story[]> {
+  const q = query.trim().toLowerCase();
+  if (!q) return getAllStories();
+
+  const stories = await getAllStories();
+  return stories.filter((story) => {
+    const haystack = [
+      story.title,
+      story.excerpt,
+      story.category ?? "",
+      story.author.name,
+    ]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
+  });
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Story } from "@/types/story";
 import ReadingTimeBadge from "@/components/shared/ReadingTimeBadge";
+import CategoryBadge from "@/components/shared/CategoryBadge";
 import { formatDate } from "@/lib/utils";
 
 interface StoryCardProps {
@@ -34,6 +35,7 @@ export default function StoryCard({ story, priority = false }: StoryCardProps) {
 
       <div className={`flex flex-1 flex-col p-5 sm:p-6 ${priority ? "lg:justify-center" : ""}`}>
         <div className="flex flex-wrap items-center gap-2">
+          {story.category && <CategoryBadge category={story.category} />}
           <ReadingTimeBadge minutes={story.readTime} />
           <time
             dateTime={story.publishedAt}
