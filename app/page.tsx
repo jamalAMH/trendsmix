@@ -13,7 +13,7 @@ import {
 export const revalidate = 60;
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Original Fiction Across Every Genre",
+  title: "Drama Stories, Wellness Guides & Lifestyle Reads",
   description: SITE_DESCRIPTION,
   path: "/",
 });

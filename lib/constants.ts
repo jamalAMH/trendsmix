@@ -5,7 +5,7 @@ export const SITE_URL = "https://www.trendsmix.online";
 export const SITE_DOMAIN = "trendsmix.online";
 
 export const SITE_DESCRIPTION =
-  "Original short fiction across drama, mystery, romance, and more. Fresh stories published daily on TrendsMix — free to read.";
+  "Drama stories, health & wellness guides and lifestyle reads. Fresh articles published daily on TrendsMix — free to read.";
 
 export const SITE_KEYWORDS = [
   "fiction",
@@ -46,51 +46,33 @@ export const FOOTER_LEGAL_LINKS = [
 ] as const;
 
 export const STORY_CATEGORIES = [
-  "horror",
-  "mystery",
-  "romance",
-  "fantasy",
-  "sci-fi",
   "drama",
+  "health-wellness",
+  "lifestyle",
 ] as const;
 
 export const CATEGORY_SEO: Record<
   (typeof STORY_CATEGORIES)[number],
   { title: string; description: string }
 > = {
-  horror: {
-    title: "Horror Short Stories",
-    description:
-      "Read original horror short stories on TrendsMix — suspense, dread, and twists that stay with you.",
-  },
-  mystery: {
-    title: "Mystery Short Stories",
-    description:
-      "Original mystery and thriller short fiction — secrets, clues, and stories that keep you guessing.",
-  },
-  romance: {
-    title: "Romance Short Stories",
-    description:
-      "Heartfelt romance short stories — love, heartbreak, and relationships told in one sitting.",
-  },
-  fantasy: {
-    title: "Fantasy Short Stories",
-    description:
-      "Original fantasy short fiction — magic, myth, and worlds beyond the everyday.",
-  },
-  "sci-fi": {
-    title: "Sci-Fi Short Stories",
-    description:
-      "Science fiction short stories — future worlds, technology, and speculative fiction on TrendsMix.",
-  },
   drama: {
     title: "Drama Short Stories",
     description:
       "Emotional drama short stories — relationships, revenge, family secrets, and life-changing moments.",
   },
+  "health-wellness": {
+    title: "Health & Wellness",
+    description:
+      "Everyday health, skincare and wellness guides for general information only — not medical advice. Always consult a qualified professional.",
+  },
+  lifestyle: {
+    title: "Lifestyle",
+    description:
+      "Practical home tips, trends, curiosities and everyday explainers from TrendsMix.",
+  },
 };
 
 export const FOOTER_CATEGORY_LINKS = STORY_CATEGORIES.map((slug) => ({
   href: `/category/${slug}`,
-  label: slug === "sci-fi" ? "Sci-Fi" : slug.charAt(0).toUpperCase() + slug.slice(1),
+  label: CATEGORY_SEO[slug].title.replace(/ Short Stories$/, ""),
 }));

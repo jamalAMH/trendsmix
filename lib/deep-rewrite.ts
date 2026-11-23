@@ -1,6 +1,7 @@
 /**
- * Deep free rewrite — transforms scraped posts into TrendsMix-original editorial articles
- * without an external AI API. Not perfect Copyscape-proof, but far more original than cleanup.
+ * Free cleanup for incoming n8n posts: strips filler/CTA lines and splits the text into
+ * paragraphs. It does NOT make content original — every post must be reviewed and
+ * rewritten by an editor before it is published.
  */
 import {
   buildMetaDescription,
@@ -37,56 +38,16 @@ function sentences(text: string): string[] {
     );
 }
 
-function rephrase(s: string): string {
-  let t = s
-    .replace(/\bI was\b/g, "I found myself")
-    .replace(/\bHe said\b/g, "He told me")
-    .replace(/\bShe said\b/g, "She told me")
-    .replace(/\bThen\b/g, "After that")
-    .replace(/\bSuddenly\b/g, "Without warning")
-    .replace(/\bHowever,\b/g, "Still,")
-    .replace(/\bIndeed,\b/g, "In practice,")
-    .replace(/\bMoreover,\b/g, "On top of that,")
-    .replace(/\bBasically,\b/g, "")
-    .replace(/\bJust like that,\b/g, "In that moment,")
-    .replace(/\bIt is important to\b/gi, "Readers should")
-    .replace(/\bYou should know\b/gi, "It helps to know")
-    .replace(/\bIn this article,?\s*/gi, "")
-    .replace(/\bMany people\b/gi, "Plenty of readers")
-    .replace(/\bAccording to\b/gi, "As reported by");
-  return t.replace(/\s{2,}/g, " ").trim();
-}
-
 function chunkToSections(sents: string[], title: string): string {
   if (sents.length === 0) {
     return `<p>This TrendsMix story — <strong>${title}</strong> — is being prepared for publication.</p>`;
   }
 
-  const mid = Math.max(2, Math.floor(sents.length / 3));
-  const part1 = sents.slice(0, mid).map(rephrase);
-  const part2 = sents.slice(mid, mid * 2).map(rephrase);
-  const part3 = sents.slice(mid * 2).map(rephrase);
-
-  const sections: string[] = [];
-
-  sections.push(`<h2>The story begins</h2>`);
-  for (const s of part1) sections.push(`<p>${s}</p>`);
-
-  if (part2.length) {
-    sections.push(`<h2>The turning point</h2>`);
-    for (const s of part2) sections.push(`<p>${s}</p>`);
-  }
-
-  if (part3.length) {
-    sections.push(`<h2>What came next</h2>`);
-    for (const s of part3) sections.push(`<p>${s}</p>`);
-  }
-
-  sections.push(
-    `<p><em>Originally published on TrendsMix.</em></p>`,
-  );
-
-  return sections.join("\n");
+  // Keep the source sentences intact. Mechanical word swaps ("I was" -> "I found
+  // myself") and boilerplate headings ("The story begins") produced unnatural text
+  // that reads as auto-generated and hurts AdSense review. Posts now land as drafts
+  // so an editor can rewrite them properly before publishing.
+  return sents.map((s) => `<p>${s}</p>`).join("\n");
 }
 
 export function deepRewritePost(title: string, content: string) {

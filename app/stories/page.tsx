@@ -13,7 +13,7 @@ export const revalidate = 60;
 export const metadata: Metadata = createPageMetadata({
   title: "All Stories",
   description:
-    "Browse the full TrendsMix library of original fiction across horror, mystery, romance, fantasy, sci-fi, and drama.",
+    "Browse the full TrendsMix library of drama stories, health & wellness guides and lifestyle reads.",
   path: "/stories",
 });
 
@@ -37,8 +37,8 @@ export default async function StoriesPage({ searchParams }: StoriesPageProps) {
             All Stories
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-400">
-            Browse our full collection of original fiction across horror, mystery,
-            romance, fantasy, and more.
+            Browse our full collection of drama stories, health &amp; wellness
+            guides and lifestyle reads.
           </p>
 
           <div className="mt-8 max-w-xl">

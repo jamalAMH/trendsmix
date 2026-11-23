@@ -161,7 +161,9 @@ export async function POST(request: Request) {
     p_slug: null,
     p_excerpt: optimized.excerpt,
     p_category_slug: "drama",
-    p_status: "published",
+    // Drafts only: automated posts must be reviewed/rewritten in the admin before going
+    // live (AdSense rejects unreviewed, auto-generated or copied content).
+    p_status: "draft",
     p_featured: false,
     p_read_time: optimized.read_time,
     p_featured_image: featuredImage,
@@ -191,7 +193,7 @@ export async function POST(request: Request) {
     published_at: string | null;
   };
 
-  revalidateStoryPaths(post.slug);
+  if (post.status === "published") revalidateStoryPaths(post.slug);
 
   return NextResponse.json(
     {

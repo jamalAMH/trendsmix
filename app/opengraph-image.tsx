@@ -121,7 +121,7 @@ export default function OpenGraphImage() {
             }}
           >
             <div style={{ display: "flex", gap: 32 }}>
-              {["Horror", "Mystery", "Romance", "Fantasy", "Sci-Fi", "Drama"].map(
+              {["Drama", "Health & Wellness", "Lifestyle"].map(
                 (genre) => (
                   <span
                     key={genre}

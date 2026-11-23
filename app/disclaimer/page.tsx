@@ -38,8 +38,8 @@ export default function DisclaimerPage() {
           2. Content Advisory
         </h2>
         <p className="mt-4">
-          TrendsMix publishes fiction across multiple genres, including horror,
-          mystery, and drama. Some stories may contain themes or depictions of:
+          TrendsMix publishes drama fiction alongside general health, wellness and
+          lifestyle articles. Some stories may contain themes or depictions of:
         </p>
         <ul className="mt-3 list-disc space-y-2 pl-5">
           <li>Violence or physical threat.</li>

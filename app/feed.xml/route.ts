@@ -32,7 +32,7 @@ export async function GET() {
   <channel>
     <title>TrendsMix</title>
     <link>${siteUrl}</link>
-    <description>Immersive storytelling across genres — horror, mystery, romance, fantasy, sci-fi, and drama.</description>
+    <description>Drama stories, health &amp; wellness guides and lifestyle reads.</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${siteUrl}/feed.xml" rel="self" type="application/rss+xml"/>

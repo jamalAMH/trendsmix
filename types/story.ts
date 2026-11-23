@@ -1,10 +1,4 @@
-export type StoryCategory =
-  | "horror"
-  | "mystery"
-  | "romance"
-  | "fantasy"
-  | "sci-fi"
-  | "drama";
+export type StoryCategory = "drama" | "health-wellness" | "lifestyle";
 
 export interface Author {
   name: string;

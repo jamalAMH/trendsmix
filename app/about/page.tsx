@@ -6,7 +6,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = createPageMetadata({
   title: "About",
   description:
-    "TrendsMix is a premium digital fiction platform publishing original short stories across horror, mystery, romance, fantasy, sci-fi, and drama — fresh reads every day.",
+    "TrendsMix is a premium digital fiction platform publishing drama short stories, health & wellness guides and lifestyle reads — fresh every day.",
   path: "/about",
 });
 

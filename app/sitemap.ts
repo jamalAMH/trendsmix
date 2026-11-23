@@ -21,6 +21,10 @@ const STATIC_ROUTES: Array<{
   { path: "/dmca", changeFrequency: "yearly", priority: 0.3 },
 ];
 
+// Rebuild the sitemap hourly so new and re-categorised posts are always listed
+// (without this it was frozen at build time and missed the newest posts).
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [stories, categorySlugs] = await Promise.all([
     getAllStories(),
@@ -36,8 +40,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const categories =
-    categorySlugs.length > 0 ? categorySlugs : [...STORY_CATEGORIES];
+  // Only list known category hubs that actually have published posts.
+  const categories = categorySlugs.filter((slug) =>
+    (STORY_CATEGORIES as readonly string[]).includes(slug),
+  );
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((slug) => ({
     url: absoluteUrl(`/category/${slug}`),

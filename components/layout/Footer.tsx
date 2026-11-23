@@ -23,9 +23,8 @@ export default function Footer() {
                 </span>
               </Link>
               <p className="mt-4 text-sm leading-relaxed text-zinc-400">
-                A premium destination for original fiction — horror, mystery,
-                romance, fantasy, and stories that stay with you long after the
-                last line.
+                Emotional drama stories, everyday wellness guides and practical
+                lifestyle reads — published daily on TrendsMix.
               </p>
             </div>
 

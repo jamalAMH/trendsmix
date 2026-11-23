@@ -25,9 +25,8 @@ export default function Hero({ featuredStory }: HeroProps) {
             </h1>
 
             <p className="mt-6 max-w-lg text-base leading-relaxed text-zinc-400 sm:text-lg">
-              TrendsMix is your daily magazine for original fiction — curated
-              reads across every genre, designed for readers who crave something
-              unforgettable.
+              TrendsMix is your daily magazine for emotional drama stories,
+              everyday wellness guides and practical lifestyle reads.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
