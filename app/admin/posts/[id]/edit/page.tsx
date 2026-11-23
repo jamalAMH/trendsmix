@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { updatePost } from "@/lib/actions/posts";
 import TipTapEditor from "@/components/admin/TipTapEditor";
+import FeaturedImageField from "@/components/admin/FeaturedImageField";
 import type { Category, Post } from "@/types/database";
 
 export default function EditPostPage() {
@@ -208,16 +209,7 @@ export default function EditPostPage() {
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 space-y-4">
             <h3 className="text-sm font-semibold text-white">Featured Image</h3>
             <div>
-              <label htmlFor="featured_image" className="block text-xs font-medium text-zinc-400">
-                Image URL
-              </label>
-              <input
-                id="featured_image"
-                name="featured_image"
-                type="url"
-                defaultValue={post.featured_image ?? ""}
-                className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-orange-500"
-              />
+              <FeaturedImageField defaultValue={post.featured_image ?? ""} />
             </div>
             <div>
               <label htmlFor="featured_image_alt" className="block text-xs font-medium text-zinc-400">
