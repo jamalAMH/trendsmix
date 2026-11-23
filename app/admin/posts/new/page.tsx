@@ -8,13 +8,40 @@ import TipTapEditor from "@/components/admin/TipTapEditor";
 import FeaturedImageField from "@/components/admin/FeaturedImageField";
 import type { Category } from "@/types/database";
 
+// Small words that add length to URLs but no meaning.
+const SLUG_STOP_WORDS = new Set([
+  "a", "an", "the", "and", "or", "but", "of", "to", "in", "on", "at", "for",
+  "with", "by", "from", "as", "is", "are", "was", "were", "be", "been", "it",
+  "its", "this", "that", "these", "those", "my", "your", "his", "her", "their",
+  "our", "me", "him", "them", "you", "i", "we", "they", "he", "she", "so",
+  "do", "does", "did", "what", "why", "how", "when", "who", "just", "into",
+  "about", "after", "before", "then", "than", "up", "out", "over", "all",
+]);
+
+const SLUG_MAX_WORDS = 6;
+const SLUG_MAX_LENGTH = 60;
+
+/** Short, readable slug: keeps the key words of the title (max 6 words / 60 chars). */
 function slugify(text: string): string {
-  return text
+  const words = text
     .toLowerCase()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/['’]/g, "")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .split(/[\s-]+/)
+    .filter(Boolean);
+
+  const keywords = words.filter((w) => !SLUG_STOP_WORDS.has(w));
+  const picked = (keywords.length >= 2 ? keywords : words).slice(0, SLUG_MAX_WORDS);
+
+  let slug = "";
+  for (const word of picked) {
+    const next = slug ? `${slug}-${word}` : word;
+    if (next.length > SLUG_MAX_LENGTH) break;
+    slug = next;
+  }
+  return slug;
 }
 
 export default function NewPostPage() {
