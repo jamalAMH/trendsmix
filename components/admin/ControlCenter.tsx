@@ -10,6 +10,7 @@ import {
   bulkPublishDrafts,
   bulkUnpublishAll,
   revalidateSite,
+  setGeoBlockAfrica,
   updateControlSettings,
 } from "@/lib/actions/control";
 import { fixBrokenPostImages } from "@/lib/actions/images";
@@ -213,6 +214,23 @@ export default function ControlCenter({
     });
   }
 
+  function toggleGeoBlock() {
+    if (!isAdmin) {
+      showError("Admin role required. Ask an admin to upgrade your account.");
+      return;
+    }
+    const next = !settings.geo_block_africa;
+    startTransition(async () => {
+      const result = await setGeoBlockAfrica(next);
+      if (!result.ok) {
+        showError(result.error);
+        return;
+      }
+      setSettings((s) => ({ ...s, geo_block_africa: next }));
+      showMessage(next ? "Africa block is ON." : "Africa block is OFF.");
+    });
+  }
+
   function runAction(
     label: string,
     action: () => Promise<{ ok: true } | { ok: false; error: string }>,
@@ -326,6 +344,48 @@ export default function ControlCenter({
           {error}
         </div>
       )}
+
+      <section
+        className={`flex flex-col gap-4 rounded-xl border p-5 sm:flex-row sm:items-center sm:justify-between ${
+          settings.geo_block_africa
+            ? "border-red-500/30 bg-red-500/5"
+            : "border-emerald-500/30 bg-emerald-500/5"
+        }`}
+      >
+        <div>
+          <p className="text-sm font-semibold text-white">
+            Block Africa:{" "}
+            <span
+              className={
+                settings.geo_block_africa ? "text-red-400" : "text-emerald-400"
+              }
+            >
+              {settings.geo_block_africa ? "ON" : "OFF"}
+            </span>
+          </p>
+          <p className="mt-1 text-xs text-zinc-400">
+            {settings.geo_block_africa
+              ? "Visitors from Africa (incl. Morocco) are blocked. Whitelisted IPs and search/ad bots still get in."
+              : "Everyone can visit the site."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={toggleGeoBlock}
+          disabled={pending || !isAdmin}
+          className={`shrink-0 rounded-lg px-5 py-2.5 text-sm font-semibold text-white transition-colors disabled:opacity-50 ${
+            settings.geo_block_africa
+              ? "bg-emerald-600 hover:bg-emerald-500"
+              : "bg-red-600 hover:bg-red-500"
+          }`}
+        >
+          {pending
+            ? "Saving…"
+            : settings.geo_block_africa
+              ? "Turn OFF Africa block"
+              : "Turn ON Africa block"}
+        </button>
+      </section>
 
       <section>
         <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">

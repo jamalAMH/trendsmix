@@ -69,6 +69,21 @@ export async function updateControlSettings(
   }
 }
 
+/** One-click switch for the Africa geo-block (bots are never blocked either way). */
+export async function setGeoBlockAfrica(
+  enabled: boolean,
+): Promise<ControlActionResult> {
+  try {
+    const { supabase } = await requireAdmin();
+    await upsertSetting(supabase, "geo_block_africa", enabled ? "true" : "false");
+    revalidatePath("/admin/control");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
 export async function bulkPublishDrafts(): Promise<ControlActionResult> {
   try {
     const { supabase } = await requireAdmin();
