@@ -15,7 +15,3 @@ export async function isMaintenanceMode(): Promise<boolean> {
   return (await getSetting("maintenance_mode")) === "true";
 }
 
-export async function isN8nEnabled(): Promise<boolean> {
-  const value = await getSetting("n8n_enabled");
-  return value !== "false";
-}

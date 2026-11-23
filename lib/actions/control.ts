@@ -9,8 +9,6 @@ export type ControlActionResult =
 
 const CONTROL_KEYS = new Set([
   "maintenance_mode",
-  "n8n_enabled",
-  "n8n_api_key",
   "geo_block_africa",
   "geo_allowed_ips",
 ]);
@@ -53,7 +51,7 @@ export async function updateControlSettings(
     const { supabase } = await requireAdmin();
 
     for (const key of CONTROL_KEYS) {
-      if (key === "maintenance_mode" || key === "n8n_enabled" || key === "geo_block_africa") {
+      if (key === "maintenance_mode" || key === "geo_block_africa") {
         const value = formData.get(key) === "true" ? "true" : "false";
         await upsertSetting(supabase, key, value);
         continue;

@@ -33,7 +33,6 @@ interface ControlStats {
 interface SystemStatus {
   supabaseConfigured: boolean;
   siteUrl: string;
-  n8nEnvConfigured: boolean;
   imageStorageConfigured: boolean;
   visitorIp: string;
   visitorCountry: string;
@@ -128,8 +127,6 @@ export default function ControlCenter({
     maintenance_mode: false,
     geo_block_africa: true,
     geo_allowed_ips: "",
-    n8n_enabled: true,
-    n8n_api_key: "",
     analytics_id: "",
   });
   const [loading, setLoading] = useState(true);
@@ -174,8 +171,6 @@ export default function ControlCenter({
         maintenance_mode: map.maintenance_mode === "true",
         geo_block_africa: map.geo_block_africa !== "false",
         geo_allowed_ips: map.geo_allowed_ips ?? "",
-        n8n_enabled: map.n8n_enabled !== "false",
-        n8n_api_key: map.n8n_api_key ?? "",
         analytics_id: map.analytics_id ?? "",
       });
       setLoading(false);
@@ -260,7 +255,7 @@ export default function ControlCenter({
     }
 
     const aiNote =
-      "Free cleanup only: removes scrape noise, adds structure and SEO meta.\nOld posts only — new n8n posts are optimized automatically.\n\nContinue?";
+      "Free cleanup only: removes scrape noise, adds structure and SEO meta.\n\nContinue?";
     if (!confirm(aiNote)) return;
 
     startTransition(async () => {
@@ -454,43 +449,6 @@ export default function ControlCenter({
               </p>
             </div>
 
-            <Toggle
-              id="n8n_enabled"
-              name="n8n_enabled"
-              label="n8n Auto-Publish"
-              description="Allow automated posts via /api/posts from n8n."
-              checked={settings.n8n_enabled}
-              disabled={!isAdmin}
-              onChange={(checked) =>
-                setSettings((s) => ({ ...s, n8n_enabled: checked }))
-              }
-            />
-
-            <div>
-              <label
-                htmlFor="n8n_api_key"
-                className="block text-xs font-medium text-zinc-400"
-              >
-                n8n API Key (Supabase)
-              </label>
-              <input
-                id="n8n_api_key"
-                name="n8n_api_key"
-                type="password"
-                value={settings.n8n_api_key}
-                onChange={(e) =>
-                  setSettings((s) => ({ ...s, n8n_api_key: e.target.value }))
-                }
-                disabled={!isAdmin}
-                placeholder="Must match N8N_API_KEY in .env.local"
-                className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-orange-500"
-              />
-              <p className="mt-1 text-xs text-zinc-600">
-                Also set N8N_API_KEY in your server environment (.env.local /
-                Vercel).
-              </p>
-            </div>
-
             <button
               type="submit"
               disabled={pending || !isAdmin}
@@ -662,29 +620,6 @@ export default function ControlCenter({
               settings.analytics_id
                 ? settings.analytics_id
                 : "Add G- ID in Settings"
-            }
-          />
-          <StatusItem
-            label="n8n Integration"
-            ok={settings.n8n_enabled}
-            detail={
-              settings.n8n_enabled ? "Auto-publish enabled" : "Auto-publish disabled"
-            }
-          />
-          <StatusItem
-            label="n8n API Key (DB)"
-            ok={settings.n8n_api_key.length > 0}
-            detail={
-              settings.n8n_api_key ? "Key configured in Supabase" : "Not set in DB"
-            }
-          />
-          <StatusItem
-            label="n8n API Key (Server)"
-            ok={systemStatus.n8nEnvConfigured}
-            detail={
-              systemStatus.n8nEnvConfigured
-                ? "Configured in environment"
-                : "Not set in .env.local / Vercel"
             }
           />
         </div>

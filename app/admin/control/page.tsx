@@ -28,7 +28,6 @@ export default async function ControlPage() {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     ),
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "",
-    n8nEnvConfigured: !!process.env.N8N_API_KEY,
     imageStorageConfigured: isImageStorageConfigured(),
     visitorIp: getClientIpFromHeaders(h),
     visitorCountry: formatCountryName(country),
