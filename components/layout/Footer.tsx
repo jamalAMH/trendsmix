@@ -24,7 +24,7 @@ export default function Footer() {
               </Link>
               <p className="mt-4 text-sm leading-relaxed text-zinc-400">
                 Emotional drama stories, everyday wellness guides and practical
-                lifestyle reads — published daily on TrendsMix.
+                lifestyle reads — free to read on TrendsMix.
               </p>
             </div>
 
@@ -34,7 +34,7 @@ export default function Footer() {
             >
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
-                  Genres
+                  Categories
                 </p>
                 <ul className="mt-5 space-y-3">
                   {FOOTER_CATEGORY_LINKS.map((link) => (

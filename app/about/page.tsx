@@ -6,7 +6,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = createPageMetadata({
   title: "About",
   description:
-    "TrendsMix is a digital magazine publishing drama short stories, health & wellness guides and lifestyle reads — fresh every day.",
+    "TrendsMix is a digital magazine publishing drama short stories, health & wellness guides and lifestyle reads — free to read.",
   path: "/about",
 });
 
@@ -108,10 +108,9 @@ export default function AboutPage() {
             Editorial Standards
           </h2>
           <p className="mt-4">
-            Quality is non-negotiable. Every submission passes through a
-            multi-stage editorial review before publication. We evaluate
-            narrative craft, originality, and emotional resonance — not
-            algorithmic trends.
+            Every piece is reviewed and edited by the TrendsMix team before it
+            is published. Our drama stories are fiction inspired by everyday
+            life, and we do not publish medical, legal or financial advice.
           </p>
           <p className="mt-3">
             For full details on how we select, review, and maintain the integrity

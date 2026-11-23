@@ -5,7 +5,7 @@ export const SITE_URL = "https://www.trendsmix.online";
 export const SITE_DOMAIN = "trendsmix.online";
 
 export const SITE_DESCRIPTION =
-  "Drama stories, health & wellness guides and lifestyle reads. Fresh articles published daily on TrendsMix — free to read.";
+  "Drama stories, health & wellness guides and lifestyle reads. Free to read on TrendsMix.";
 
 export const SITE_KEYWORDS = [
   "short stories",
@@ -71,7 +71,11 @@ export const CATEGORY_SEO: Record<
   },
 };
 
-export const FOOTER_CATEGORY_LINKS = STORY_CATEGORIES.map((slug) => ({
+// Health & Wellness has no published posts right now, so keep it out of the
+// footer; add it back here once it has articles again.
+export const FOOTER_CATEGORY_LINKS = STORY_CATEGORIES.filter(
+  (slug) => slug !== "health-wellness",
+).map((slug) => ({
   href: `/category/${slug}`,
   label: CATEGORY_SEO[slug].title.replace(/ Short Stories$/, ""),
 }));

@@ -6,19 +6,18 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = createPageMetadata({
   title: "Editorial Policy",
   description:
-    "The TrendsMix editorial policy outlines how we select, review, and publish original fiction — our standards for quality, integrity, and reader trust.",
+    "The TrendsMix editorial policy outlines how we write, review, and publish stories and articles — our standards for quality, integrity, and reader trust.",
   path: "/editorial-policy",
 });
 
 export default function EditorialPolicyPage() {
   return (
-    <LegalPageLayout title="Editorial Policy" lastUpdated="2026-07-09">
+    <LegalPageLayout title="Editorial Policy" lastUpdated="2026-11-23">
       <p>
         TrendsMix is built on a foundation of editorial integrity. This policy
-        explains how we select, review, and publish original fiction, and the
-        standards we hold ourselves to. Our goal is to maintain reader trust
-        while fostering a platform where compelling, original storytelling
-        thrives.
+        explains how we write, review, and publish our drama stories and
+        lifestyle articles, and the standards we hold ourselves to. Our goal is
+        to earn and keep reader trust.
       </p>
 
       <section aria-labelledby="editorial-mission">
@@ -26,10 +25,11 @@ export default function EditorialPolicyPage() {
           1. Editorial Mission
         </h2>
         <p className="mt-4">
-          Our editorial mission is to publish short fiction that is original,
-          engaging, and diverse in voice and genre. We prioritise narratives that
-          demonstrate craft, emotional resonance, and a distinct point of view —
-          regardless of the author&apos;s background or publishing history.
+          Our mission is to publish emotional drama stories and practical
+          lifestyle reads that are original, easy to read, and worth the
+          reader&apos;s time. Our drama stories are fiction inspired by
+          everyday life: names, places and events are invented or changed, and
+          they should not be read as news or factual reporting.
         </p>
       </section>
 
@@ -38,29 +38,25 @@ export default function EditorialPolicyPage() {
           2. Selection Process
         </h2>
         <p className="mt-4">
-          Every story published on TrendsMix passes through a structured
-          editorial pipeline:
+          Before anything is published on TrendsMix, the TrendsMix team:
         </p>
         <ol className="mt-3 list-decimal space-y-2 pl-5">
           <li>
-            <strong className="text-zinc-200">Initial screening.</strong>{" "}
-            Submissions are reviewed for adherence to our genre scope, word
-            count guidelines, and content standards.
+            <strong className="text-zinc-200">Checks the topic.</strong>{" "}
+            The piece must fit our categories and our content standards below.
           </li>
           <li>
-            <strong className="text-zinc-200">Editorial evaluation.</strong>{" "}
-            Stories that pass screening are assessed for narrative quality,
-            originality, pacing, and emotional impact.
+            <strong className="text-zinc-200">Reviews the writing.</strong>{" "}
+            We read it for originality, clarity, and value to the reader.
           </li>
           <li>
-            <strong className="text-zinc-200">Copy editing.</strong> Accepted
-            stories undergo copy editing for grammar, consistency, and clarity
-            while preserving the author&apos;s voice.
+            <strong className="text-zinc-200">Edits it.</strong> We fix
+            grammar, spelling and formatting.
           </li>
           <li>
-            <strong className="text-zinc-200">Final review.</strong> A senior
-            editor conducts a final review before publication to ensure the
-            piece meets our quality benchmarks.
+            <strong className="text-zinc-200">Removes risky claims.</strong> We
+            do not publish medical, legal or financial advice, or news-style
+            claims about real people that we cannot source.
           </li>
         </ol>
       </section>
@@ -82,10 +78,10 @@ export default function EditorialPolicyPage() {
           </li>
         </ul>
         <p className="mt-3">
-          Stories containing mature themes (violence, horror elements, strong
-          language) are permitted when they serve the narrative and are
-          appropriately labelled. Genre tags and reading-time estimates are
-          displayed on every story to help readers make informed choices.
+          Stories may touch on mature themes such as family conflict, illness
+          or loss when they serve the story, but never in a graphic or
+          exploitative way. A category tag and reading-time estimate are shown
+          on every story to help readers choose what to read.
         </p>
       </section>
 
@@ -125,11 +121,11 @@ export default function EditorialPolicyPage() {
           6. Attribution &amp; Authorship
         </h2>
         <p className="mt-4">
-          Every story on TrendsMix is attributed to its author by name. We
-          respect authorial voice and do not make substantive changes to a
-          story&apos;s content without the author&apos;s consent. Authors retain
-          ownership of their original work unless a separate agreement states
-          otherwise.
+          Stories are published under the TrendsMix byline unless a named author
+          is credited on the story. When we publish work by an outside writer,
+          we credit them by name and do not make substantive changes without
+          their consent. Outside writers keep ownership of their original work
+          unless a separate agreement states otherwise.
         </p>
       </section>
 
@@ -160,7 +156,7 @@ export default function EditorialPolicyPage() {
           <Link href="/contact" className="text-orange-400 underline decoration-orange-400/30 underline-offset-2 transition-colors hover:text-orange-300">
             contact us
           </Link>
-          . Every report is reviewed by a member of our editorial team.
+          . We read and review every report.
         </p>
       </section>
     </LegalPageLayout>
