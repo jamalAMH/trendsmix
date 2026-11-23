@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { updatePost } from "@/lib/actions/posts";
 import TipTapEditor from "@/components/admin/TipTapEditor";
 import FeaturedImageField from "@/components/admin/FeaturedImageField";
+import PostLinkBox from "@/components/admin/PostLinkBox";
 import type { Category, Post } from "@/types/database";
 
 export default function EditPostPage() {
@@ -20,6 +21,14 @@ export default function EditPostPage() {
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [justCreated, setJustCreated] = useState(false);
+
+  useEffect(() => {
+    // Set by createPost's redirect so we can highlight the new post's link.
+    if (new URLSearchParams(window.location.search).get("created") === "1") {
+      setJustCreated(true);
+    }
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -50,6 +59,10 @@ export default function EditPostPage() {
     startTransition(async () => {
       try {
         await updatePost(params.id, formData);
+        const newStatus = formData.get("status");
+        setPost((p) =>
+          p ? { ...p, slug, status: typeof newStatus === "string" ? newStatus : p.status } as Post : p,
+        );
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } catch (err) {
@@ -68,6 +81,8 @@ export default function EditPostPage() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <PostLinkBox slug={post.slug} status={post.status} justCreated={justCreated} />
+
       {error && (
         <div className="rounded-lg bg-red-500/10 px-4 py-3 text-sm text-red-400 ring-1 ring-red-500/20">
           {error}

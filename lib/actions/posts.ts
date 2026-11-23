@@ -70,7 +70,7 @@ export async function createPost(formData: FormData) {
   revalidatePath("/admin/posts");
   revalidatePath("/");
   revalidatePath("/stories");
-  redirect(`/admin/posts/${data.id}/edit`);
+  redirect(`/admin/posts/${data.id}/edit?created=1`);
 }
 
 export async function updatePost(id: string, formData: FormData) {
