@@ -40,6 +40,27 @@ const FIELDS: Array<{ key: string; label: string; type?: string; group: string; 
     group: "Code & Plugins",
     help: "One line per entry, e.g. “adsterra.com, 12345, DIRECT”. Your AdSense line is added automatically. View it at /ads.txt.",
   },
+  {
+    key: "ad_code_in_article_1",
+    label: "In-article ad 1 — after the 2nd paragraph",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "Paste a placement code (e.g. HBAgency in-article). Shown inside every story.",
+  },
+  {
+    key: "ad_code_in_article_2",
+    label: "In-article ad 2 — around the middle of the story",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "Second in-article placement. Only shown on stories with 6+ paragraphs.",
+  },
+  {
+    key: "ad_code_after_article",
+    label: "Ad after the story",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "Shown right after the story text. Sticky / interscroller / outstream codes usually go in Body code instead.",
+  },
 ];
 
 export default function SettingsPage() {

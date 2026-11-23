@@ -21,6 +21,9 @@ const ALLOWED_KEYS = new Set([
   "custom_head_code",
   "custom_body_code",
   "ads_txt_extra",
+  "ad_code_in_article_1",
+  "ad_code_in_article_2",
+  "ad_code_after_article",
 ]);
 
 export async function updateSettings(formData: FormData) {

@@ -8,6 +8,8 @@ import JsonLd from "@/components/seo/JsonLd";
 import ReadingProgress from "@/components/stories/ReadingProgress";
 import ShareButtons from "@/components/stories/ShareButtons";
 import ArticleAd from "@/components/analytics/ArticleAd";
+import { getSetting } from "@/lib/settings";
+import { splitArticleForAds } from "@/lib/article-ads";
 import StoryNavigation from "@/components/stories/StoryNavigation";
 import RelatedStories from "@/components/stories/RelatedStories";
 import {
@@ -63,6 +65,16 @@ export default async function StoryDetailsPage({
 
   const { prev, next } = await getAdjacentStories(slug);
   const relatedStories = await getRelatedStories(slug, 3);
+  const [adInArticle1, adInArticle2, adAfterArticle] = await Promise.all([
+    getSetting("ad_code_in_article_1"),
+    getSetting("ad_code_in_article_2"),
+    getSetting("ad_code_after_article"),
+  ]);
+  const articleParts = splitArticleForAds(
+    sanitizeHtml(story.content),
+    adInArticle1.trim(),
+    adInArticle2.trim(),
+  );
   const storyUrl = absoluteUrl(`/stories/${story.slug}`);
 
   const breadcrumbItems = [
@@ -191,8 +203,27 @@ export default async function StoryDetailsPage({
             className="article-body mt-10 text-base leading-[1.85] text-zinc-300 sm:text-lg"
             itemProp="articleBody"
           >
-            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(story.content) }} />
+            {articleParts.map((part, i) =>
+              part.type === "html" ? (
+                <div key={`html-${i}`} dangerouslySetInnerHTML={{ __html: part.html }} />
+              ) : (
+                <div
+                  key={part.key}
+                  className="ad-slot my-8 text-center"
+                  suppressHydrationWarning
+                  dangerouslySetInnerHTML={{ __html: part.code }}
+                />
+              ),
+            )}
           </div>
+
+          {adAfterArticle.trim() && (
+            <div
+              className="ad-slot mt-10 text-center"
+              suppressHydrationWarning
+              dangerouslySetInnerHTML={{ __html: adAfterArticle }}
+            />
+          )}
 
           <ArticleAd className="mt-12" />
 
