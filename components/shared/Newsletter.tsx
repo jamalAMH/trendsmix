@@ -14,7 +14,7 @@ export default function Newsletter() {
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-zinc-400 sm:text-base">
             Get a curated weekly digest of the best reads on TrendsMix — handpicked
-            fiction delivered straight to your inbox.
+            stories delivered straight to your inbox.
           </p>
 
           <form className="mt-8 flex flex-col gap-3 sm:flex-row">

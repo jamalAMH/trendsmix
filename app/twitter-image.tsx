@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { SITE_DESCRIPTION, SITE_NAME } from "@/lib/constants";
 import { OgMark } from "@/components/brand/og-mark";
 
-export const alt = `${SITE_NAME} — original fiction across every genre`;
+export const alt = `${SITE_NAME} — drama stories, wellness & lifestyle reads`;
 export const size = {
   width: 1200,
   height: 630,
@@ -89,7 +89,7 @@ export default function TwitterImage() {
                 letterSpacing: "0.15em",
               }}
             >
-              Original Fiction Magazine
+              Stories · Wellness · Lifestyle
             </span>
           </div>
 

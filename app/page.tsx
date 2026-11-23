@@ -30,7 +30,7 @@ export default async function Home() {
       <StoryGrid
         stories={latestStories}
         title="Latest Stories"
-        description="The newest fiction on TrendsMix — just published and ready to read."
+        description="The newest stories on TrendsMix — just published and ready to read."
         viewAllHref="/stories"
       />
 

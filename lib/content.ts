@@ -21,18 +21,34 @@ function getSupabase() {
   return _supabase;
 }
 
+// Leftover template headings from the old bulk rewrite ("The turning point",
+// "What came next") read as spun content, so strip them when rendering.
+const TEMPLATE_HEADING =
+  /<h[1-6][^>]*>\s*(?:the turning point|what came next)\s*<\/h[1-6]>/gi;
+
+function cleanContent(html: string): string {
+  return html ? html.replace(TEMPLATE_HEADING, "") : html;
+}
+
+// picsum.photos placeholders are random stock photos; show the category
+// gradient fallback instead of an unrelated image.
+function realImage(src: string | null | undefined): string | null {
+  if (!src || src.includes("picsum.photos")) return null;
+  return src;
+}
+
 function postToStory(post: PostWithRelations): Story {
   return {
     slug: post.slug,
     title: post.title,
     excerpt: post.excerpt,
-    content: post.content,
+    content: cleanContent(post.content),
     category: (post.categories?.slug as StoryCategory) || undefined,
     readTime: post.read_time,
     publishedAt: post.published_at ?? post.created_at,
     featuredImage: {
       alt: post.featured_image_alt ?? "",
-      src: post.featured_image ?? null,
+      src: realImage(post.featured_image),
     },
     author: {
       name:
@@ -43,7 +59,7 @@ function postToStory(post: PostWithRelations): Story {
     metaTitle: post.meta_title,
     metaDescription: post.meta_description,
     canonicalUrl: post.canonical_url,
-    ogImage: post.og_image,
+    ogImage: realImage(post.og_image),
   };
 }
 

@@ -17,7 +17,7 @@ export default function Hero({ featuredStory }: HeroProps) {
           <div className="animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-orange-400">
               <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
-              New stories every day
+              Drama · Wellness · Lifestyle
             </span>
 
             <h1 className="font-display mt-6 text-4xl leading-[1.1] tracking-tight text-white sm:text-5xl lg:text-6xl">
@@ -47,21 +47,21 @@ export default function Hero({ featuredStory }: HeroProps) {
             <dl className="mt-10 grid grid-cols-3 gap-4 border-t border-zinc-800/80 pt-8">
               <div>
                 <dt className="text-xs uppercase tracking-wider text-zinc-500">
-                  Genres
+                  Categories
                 </dt>
-                <dd className="mt-1 text-xl font-semibold text-white">6+</dd>
+                <dd className="mt-1 text-xl font-semibold text-white">3</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wider text-zinc-500">
-                  Daily reads
+                  Price
                 </dt>
-                <dd className="mt-1 text-xl font-semibold text-white">Fresh</dd>
+                <dd className="mt-1 text-xl font-semibold text-white">Free</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-wider text-zinc-500">
                   Avg. read
                 </dt>
-                <dd className="mt-1 text-xl font-semibold text-white">8 min</dd>
+                <dd className="mt-1 text-xl font-semibold text-white">3–5 min</dd>
               </div>
             </dl>
           </div>

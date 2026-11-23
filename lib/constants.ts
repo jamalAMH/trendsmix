@@ -8,7 +8,6 @@ export const SITE_DESCRIPTION =
   "Drama stories, health & wellness guides and lifestyle reads. Fresh articles published daily on TrendsMix — free to read.";
 
 export const SITE_KEYWORDS = [
-  "fiction",
   "short stories",
   "drama stories",
   "revenge stories",

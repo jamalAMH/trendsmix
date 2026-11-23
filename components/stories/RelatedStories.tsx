@@ -14,7 +14,7 @@ export default function RelatedStories({ stories }: RelatedStoriesProps) {
     <StoryGrid
       stories={stories}
       title="Related Stories"
-      description="More reads you might enjoy from the same world of fiction."
+      description="More reads you might enjoy."
       viewAllHref="/stories"
     />
   );

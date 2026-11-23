@@ -6,7 +6,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = createPageMetadata({
   title: "About",
   description:
-    "TrendsMix is a premium digital fiction platform publishing drama short stories, health & wellness guides and lifestyle reads — fresh every day.",
+    "TrendsMix is a digital magazine publishing drama short stories, health & wellness guides and lifestyle reads — fresh every day.",
   path: "/about",
 });
 
@@ -19,8 +19,8 @@ export default function AboutPage() {
           About TrendsMix
         </h1>
         <p className="mt-4 max-w-2xl text-lg leading-relaxed text-zinc-300">
-          A premium destination for original fiction — curated reads across every
-          genre, designed for readers who crave something unforgettable.
+          A digital magazine for emotional drama stories, everyday wellness
+          guides and practical lifestyle reads.
         </p>
       </header>
 
@@ -33,7 +33,7 @@ export default function AboutPage() {
             Our Mission
           </h2>
           <p className="mt-4">
-            TrendsMix exists to champion short fiction in the digital age. We
+            TrendsMix exists to champion short, meaningful reads in the digital age. We
             believe powerful stories should be free, accessible, and easy to
             discover — whether you have five minutes during a commute or an
             entire evening to yourself.
@@ -41,7 +41,7 @@ export default function AboutPage() {
           <p className="mt-3">
             Every story we publish is selected with care. We prioritize voice,
             originality, and emotional impact over word count. The result is a
-            library of fiction that rewards attention and stays with you long
+            library of stories that rewards attention and stays with you long
             after the last line.
           </p>
         </section>
