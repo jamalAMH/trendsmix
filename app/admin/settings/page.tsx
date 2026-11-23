@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { updateSettings } from "@/lib/actions/settings";
 import type { Setting } from "@/types/database";
 
-const FIELDS: Array<{ key: string; label: string; type?: string; group: string }> = [
+const FIELDS: Array<{ key: string; label: string; type?: string; group: string; help?: string }> = [
   { key: "site_name", label: "Site Name", group: "General" },
   { key: "site_description", label: "Site Description", group: "General" },
   { key: "contact_email", label: "Contact Email", type: "email", group: "General" },
@@ -19,6 +19,27 @@ const FIELDS: Array<{ key: string; label: string; type?: string; group: string }
   { key: "grow_id", label: "Grow by Mediavine Site ID (for Journey)", group: "Monetization & Analytics" },
   { key: "analytics_id", label: "Google Analytics ID (GA4)", group: "Monetization & Analytics" },
   { key: "google_site_verification", label: "Google Search Console Verification Code", group: "Monetization & Analytics" },
+  {
+    key: "custom_head_code",
+    label: "Head code — pasted inside <head> on every page",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "Paste the <script> / <meta> code an ad network or tool gives you (Monetag, Adsterra, Ezoic, Meta Pixel, site verification…). Supported tags: script, meta, link, style, noscript.",
+  },
+  {
+    key: "custom_body_code",
+    label: "Body code — added at the end of every page",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "For codes that say “paste before </body>” (chat widgets, ad tags, pixels).",
+  },
+  {
+    key: "ads_txt_extra",
+    label: "Extra ads.txt lines",
+    type: "textarea",
+    group: "Code & Plugins",
+    help: "One line per entry, e.g. “adsterra.com, 12345, DIRECT”. Your AdSense line is added automatically. View it at /ads.txt.",
+  },
 ];
 
 export default function SettingsPage() {
@@ -92,6 +113,21 @@ export default function SettingsPage() {
               >
                 {field.label}
               </label>
+              {field.type === "textarea" ? (
+                <textarea
+                  id={field.key}
+                  name={field.key}
+                  rows={field.key === "ads_txt_extra" ? 4 : 6}
+                  defaultValue={values[field.key] ?? ""}
+                  spellCheck={false}
+                  placeholder={
+                    field.key === "ads_txt_extra"
+                      ? "example-network.com, pub-0000, DIRECT"
+                      : '<script async src="https://…"></script>'
+                  }
+                  className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 font-mono text-xs text-white placeholder-zinc-600 outline-none focus:border-orange-500"
+                />
+              ) : (
               <input
                 id={field.key}
                 name={field.key}
@@ -114,6 +150,10 @@ export default function SettingsPage() {
                 }
                 className="mt-1 block w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-orange-500"
               />
+              )}
+              {field.help && (
+                <p className="mt-1 text-xs text-zinc-500">{field.help}</p>
+              )}
               {field.key === "analytics_id" && (
                 <p className="mt-1 text-xs text-zinc-500">
                   GA4 Measurement ID from{" "}

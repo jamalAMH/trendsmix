@@ -8,6 +8,7 @@ import AnalyticsTracker from "@/components/analytics/AnalyticsTracker";
 import GoogleAnalyticsScript from "@/components/analytics/GoogleAnalyticsScript";
 import AdSenseScript from "@/components/analytics/AdSenseScript";
 import GrowScript from "@/components/analytics/GrowScript";
+import { CustomBodyCode, CustomHeadCode } from "@/components/analytics/CustomCode";
 import { createMetadataBase, websiteJsonLd } from "@/lib/seo";
 import { getSetting } from "@/lib/settings";
 import "./globals.css";
@@ -49,6 +50,9 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} h-full dark antialiased`}
     >
+      <head>
+        <CustomHeadCode />
+      </head>
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
         <GoogleAnalyticsScript />
         <AdSenseScript />
@@ -61,6 +65,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <CustomBodyCode />
       </body>
     </html>
   );

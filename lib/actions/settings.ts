@@ -18,12 +18,17 @@ const ALLOWED_KEYS = new Set([
   "grow_id",
   "analytics_id",
   "google_site_verification",
+  "custom_head_code",
+  "custom_body_code",
+  "ads_txt_extra",
 ]);
 
 export async function updateSettings(formData: FormData) {
   const { supabase } = await requireAdmin();
 
   for (const key of ALLOWED_KEYS) {
+    // Only touch keys the form actually sent, so older forms never wipe new fields.
+    if (!formData.has(key)) continue;
     let value = (formData.get(key) as string) ?? "";
     if (key === "analytics_id") {
       value = normalizeAnalyticsId(value);
