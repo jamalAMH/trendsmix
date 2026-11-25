@@ -13,17 +13,9 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
-  // Site moved to www.trendmiix.online: send the old domain and the bare new
-  // domain there permanently (301/308), keeping the path, so old links and
-  // Google rankings carry over.
+  // The site lives only on www.trendmiix.online: send the bare domain there.
   async redirects() {
     return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "(?:www\\.)?trendsmix\\.online" }],
-        destination: "https://www.trendmiix.online/:path*",
-        permanent: true,
-      },
       {
         source: "/:path*",
         has: [{ type: "host", value: "trendmiix\\.online" }],
