@@ -1,8 +1,8 @@
 export const SITE_NAME = "TrendsMix";
 
-export const SITE_URL = "https://www.trendsmix.online";
+export const SITE_URL = "https://www.trendmiix.online";
 
-export const SITE_DOMAIN = "trendsmix.online";
+export const SITE_DOMAIN = "trendmiix.online";
 
 export const SITE_DESCRIPTION =
   "Drama stories, health & wellness guides and lifestyle reads. Free to read on TrendsMix.";

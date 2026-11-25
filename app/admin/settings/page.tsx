@@ -164,7 +164,7 @@ export default function SettingsPage() {
                         : field.key === "adsense_slot_id"
                           ? "1234567890"
                           : field.key === "contact_email"
-                            ? "contact@trendsmix.online"
+                            ? "contact@trendmiix.online"
                             : field.key === "grow_id"
                               ? "u-XXXXXXXXXXXXXXXXXXXX"
                               : undefined
